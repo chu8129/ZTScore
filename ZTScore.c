@@ -39,7 +39,6 @@ float get_rms(int pcmList[], int length){
         sum += pcmList[index];
     }
     float res = (float) sqrt(sum / length);
-//    LOGD("[Score] get_remsld......\n");
     return res;
 }
 
@@ -99,49 +98,18 @@ struct IndexRange  get_notSilenceRangeLogic(int lyricIndex, int audio[], int len
     int minSilenceFrams = (int) (1.0 * silence_min / 1000 * channels * sr);
 
     int caculateCount = (length - minSilenceFrams) / seek_step + 1;
-//    int caculateCount = (int) ((length - minSilenceFrams + 1) / seek_step);
-//    int diviceFlag = ((length - minSilenceFrams)) % seek_step;
-//    if (diviceFlag != 0){
-//        caculateCount ++;
-//    }
-
-    /*LOGD("lyricIndex:%d, source dbfs:%f, reversThreshold:%f, seek step:%d, minSilenceFrams:%d, caculateCount:%d, audio length:%d\n",
-        lyricIndex, dbfs, reversThreshold, seek_step, minSilenceFrams, caculateCount, length);*/
-
-//    int caculateStartIndex[caculateCount];
-//    int* caculateStartIndex = malloc(caculateCount * sizeof(int));
-//    memset(caculateStartIndex, 0, sizeof(caculateCount * caculateStartIndex[0]));
-    int *caculateStartIndex;
-//    LOGD("[Score] count -> %d -> ]]]]\n", caculateCount);
-    caculateStartIndex = malloc(sizeof(int) * caculateCount);
-//    LOGD("[Score] count -> %d -> ]]]] done\n", caculateCount);
-
+    int *caculateStartIndex = malloc(sizeof(int) * caculateCount);
     memset(caculateStartIndex, 0, sizeof(int) * caculateCount);
     
     for (int index=0; index < caculateCount; index ++){
-        caculateStartIndex[index] = 0;
-    }
-    
-//    LOGD("[Score] wait check ..........0000\n");
-    for (int index=0; index < caculateCount; index ++){
         caculateStartIndex[index] = index * seek_step;
     }
-    
-//    if (diviceFlag !=0){
-//        caculateStartIndex[caculateCount - 1] = length - minSilenceFrams;
-//    }
-
-//    return notSilenceRangeList2;
-
     
     int *silenceFlagList = malloc(caculateCount * sizeof(int));
     for (int i=0;i<caculateCount;i++){silenceFlagList[i]=0;}
 
     int *partPcmList = malloc(minSilenceFrams * sizeof(int));
 
-
-    
-//    LOGD("[Score] wait check ..........1111\n");
     for (int index =0; index < caculateCount; index ++){
         int startIndex = caculateStartIndex[index];
 
@@ -159,7 +127,6 @@ struct IndexRange  get_notSilenceRangeLogic(int lyricIndex, int audio[], int len
         }
 //        LOGD(" flag: < %d>, reversThreshold:< %.1f>\n", silenceFlagList[index], reversThreshold);
     }
-//    LOGD("[Score] wait check ..........\n");
 
     // 取静默区间
     int silenceCount = 0;
@@ -169,10 +136,11 @@ struct IndexRange  get_notSilenceRangeLogic(int lyricIndex, int audio[], int len
             silenceCount ++;
         }
     }
-//    LOGD("silence count:%d\n", silenceCount);
+    LOGD("silence count:%d", silenceCount);
 
     int silenceIndexList[silenceCount];
     memset(silenceIndexList, 0 , silenceCount * sizeof(silenceIndexList[0]));
+
     int updateSilenceIndex = 0;
     for (int index = 0; index < caculateCount; index ++){
         if (silenceFlagList[index] == 0){
@@ -181,11 +149,10 @@ struct IndexRange  get_notSilenceRangeLogic(int lyricIndex, int audio[], int len
         }
     }
 
-    //    LOGD("======== silence index ======updateSilenceIndex:%d\n", updateSilenceIndex);
-    for (int __index=0; __index < updateSilenceIndex; __index++){
-        LOGD("%d -> ", silenceIndexList[__index]);
+    LOGD("======== silence index ======updateSilenceIndex:%d\n", updateSilenceIndex);
+    for (int __index=0; __index < updateSilenceIndex/2; __index++){
+        LOGD("silence range %d -> %d", silenceIndexList[2 * __index], silenceIndexList[2 * __index + 1]);
     }
-    LOGD("\n");
 
 
     // 提取连续区间
@@ -203,7 +170,7 @@ struct IndexRange  get_notSilenceRangeLogic(int lyricIndex, int audio[], int len
             silenceIndexRange[2 * silenceRangeIndex + 1] = prevPointer + minSilenceFrams;
             silenceRangeIndex ++;
             // LOGD("in get_notSilenceRangeLogic, add silence range, %.1f:%.1f\n", 1000.0 * currentPointer/channels/sr, 1000.0 * (prevPointer + minSilenceFrams)/channels/sr);
-//            LOGD(" >>>> in get_notSilenceRangeLogic, add silence range, %d:%d\n", currentPointer, prevPointer + minSilenceFrams);
+            // LOGD(" >>>> in get_notSilenceRangeLogic, add silence range, %d:%d\n", currentPointer, prevPointer + minSilenceFrams);
             currentPointer = silenceIndexList[index];
         }
         if (silenceRangeIndex >= MAX_WORDS_ONE_LINE)break;
@@ -213,16 +180,12 @@ struct IndexRange  get_notSilenceRangeLogic(int lyricIndex, int audio[], int len
     silenceIndexRange[2 * silenceRangeIndex + 1] = prevPointer + minSilenceFrams;
     silenceRangeIndex ++;
     
-    /*
-    LOGD("silenceRangeIndex:%d\n", silenceRangeIndex);
+    LOGD("silenceRangeIndex:%d", silenceRangeIndex);
     
     for (int index =0; index < silenceRangeIndex; index ++){
-        LOGD("range index:%d ", index);
-        LOGD("start:%d ", silenceIndexRange[2 * index]);
-        LOGD("end:%d ", silenceIndexRange[2 * index + 1]);
-        LOGD("\n");
+        LOGD("range index:%d, start:%d, end:%d", index, silenceIndexRange[2 * index], silenceIndexRange[2 * index + 1]);
     }
-*/
+
     // 非静默区间
     struct IndexRange notSilenceRangeList = {0,  malloc( 2 * (silenceRangeIndex + 1) * sizeof(int))};
     memset(notSilenceRangeList.data, 0 , 2 * (silenceRangeIndex + 1) * sizeof(notSilenceRangeList.data[0]));
@@ -247,13 +210,13 @@ struct IndexRange  get_notSilenceRangeLogic(int lyricIndex, int audio[], int len
             notSilenceRangeList.data[2*(notSilenceCount)] = notSilenceRangeStartIndex;
             notSilenceRangeList.data[2*(notSilenceCount) + 1] = notSilenceRangeEndIndex;
             notSilenceCount ++;
+            LOGD("get not silence range, %d:%d", notSilenceRangeList.data[2*(index -1)], notSilenceRangeList.data[2*(index -1) + 1]);
         }
-//        LOGD("get not silence range, %d:%d\n", notSilenceRangeList.data[2*(index -1)] * 1000 / channels / sr, notSilenceRangeList.data[2*(index -1) + 1] * 1000 / channels / sr);
     }
     notSilenceRangeList.length = 2*notSilenceCount;
-//    free(caculateStartIndex);
-//    free(partPcmList);
-//    free(silenceFlagList);
+    free(caculateStartIndex);
+    free(partPcmList);
+    free(silenceFlagList);
     return notSilenceRangeList;
 }
 
@@ -438,15 +401,17 @@ float get_emotionGrade(float splitTimes[], int splitRangeCount, float dbfsArrays
         if (value > dbfsMax){dbfsMax=value;}
         if (value < dbfsMin){dbfsMin=value;}
     }
-    LOGD("音频幅度, 最大:%.3f, 最小:%.3f\n", dbfsMax, dbfsMin);
+    LOGD("音频幅度, 最大:%.3f, 最小:%.3f", dbfsMax, dbfsMin);
 
     float dbfsGrade = 1 - (dbfsMax - dbfsMin)/15;
-    LOGD("发声时长情感分:%.3f, 发声音量情感分:%.3f\n", durationsGrade, dbfsGrade);
+    LOGD("发声时长情感分:%.3f, 发声音量情感分:%.3f", durationsGrade, dbfsGrade);
     return 0.4 * durationsGrade + 0.6 * dbfsGrade; // 0.5 * (durationsGrade + dbfsGrade) + 0.5 * fabs(durationsGrade - dbfsGrade);
 }
 
 float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineTime[], int existsTimeRangeCount) {
     static float res[2];
+    res[0] = 0;
+    res[1] = 1;
     if (segmentFrames < 48000 * 2 * 0.1){
         LOGD("ERROR, audio length error: < 0.1S");
         return res;
@@ -456,15 +421,14 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
     // 非静音区间（lineIndex 打印用，cutAudioFrame 为 pcm，segmentFrames 为 pcm 长度，歌词中间值数组，existsTimeRangeCount 歌词有多少个字 - 1，后面的 3 个可以外边传进来）
     struct IndexRange notSilenceRange = get_notSilenceRange(0, cutAudioFrame, segmentFrames, lyricMiddleTimes, existsTimeRangeCount, CHANNELS, SAMPLE_RATE, BITS);
     int rangeNum = notSilenceRange.length/2;
-    /*
-    LOGD("============== best result:%d length:%d ================\n", 0, rangeNum);
+
+    LOGD("============== best result:%d length:%d ================", 0, rangeNum);
     for (int index =0; index < rangeNum; index ++){
-        LOGD("[%.0f, %.0f],\n",
+        LOGD("best range [%.0f, %.0f]",
             1.0 * notSilenceRange.data[2*index] / CHANNELS / SAMPLE_RATE * 1000,
             1.0 * notSilenceRange.data[2*index + 1] / CHANNELS / SAMPLE_RATE * 1000
         );
     }
-*/
     // 节奏分
     float* splitRangeTimes = get_frameIndexToTimeIndex(notSilenceRange, CHANNELS, SAMPLE_RATE);
     struct IndexRange splitMiddleTimesStruct = get_splitMiddleTimes(splitRangeTimes, notSilenceRange.length);
@@ -532,10 +496,6 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
         int newValue = (int)(value / 32768 * 256 * value / 32768 * 256);
         intPcmList[i] = newValue;
     }
-//    for (int i=0; i < pcmLength; i++){
-//        pcmList[i] = (int) (pcmList[i] / 32768 * 256 * pcmList[i] / 32768 * 256);
-//    }
-    
     return innerCalculateGrade(intPcmList, intPcmLength, lyricList, lyricLength);
 }
 
