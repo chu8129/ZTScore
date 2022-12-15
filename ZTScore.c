@@ -39,7 +39,6 @@ float get_rms(int pcmList[], int length){
         sum += pcmList[index];
     }
     float res = (float) sqrt(sum / length);
-//    LOGD("[Score] get_remsld......\n");
     return res;
 }
 
@@ -447,6 +446,8 @@ float get_emotionGrade(float splitTimes[], int splitRangeCount, float dbfsArrays
 
 float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineTime[], int existsTimeRangeCount) {
     static float res[2];
+    res[0] = 0;
+    res[1] = 1;
     if (segmentFrames < 48000 * 2 * 0.1){
         LOGD("ERROR, audio length error: < 0.1S");
         return res;
@@ -532,10 +533,6 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
         int newValue = (int)(value / 32768 * 256 * value / 32768 * 256);
         intPcmList[i] = newValue;
     }
-//    for (int i=0; i < pcmLength; i++){
-//        pcmList[i] = (int) (pcmList[i] / 32768 * 256 * pcmList[i] / 32768 * 256);
-//    }
-    
     return innerCalculateGrade(intPcmList, intPcmLength, lyricList, lyricLength);
 }
 
