@@ -180,13 +180,10 @@ struct IndexRange  get_notSilenceRangeLogic(int lyricIndex, int audio[], int len
     silenceIndexRange[2 * silenceRangeIndex + 1] = prevPointer + minSilenceFrams;
     silenceRangeIndex ++;
     
-    LOGD("silenceRangeIndex:%d\n", silenceRangeIndex);
+    LOGD("silenceRangeIndex:%d", silenceRangeIndex);
     
     for (int index =0; index < silenceRangeIndex; index ++){
-        LOGD("range index:%d ", index);
-        LOGD("start:%d ", silenceIndexRange[2 * index]);
-        LOGD("end:%d ", silenceIndexRange[2 * index + 1]);
-        LOGD("\n");
+        LOGD("range index:%d, start:%d, end:%d", index, silenceIndexRange[2 * index], silenceIndexRange[2 * index + 1]);
     }
 
     // 非静默区间
@@ -213,7 +210,7 @@ struct IndexRange  get_notSilenceRangeLogic(int lyricIndex, int audio[], int len
             notSilenceRangeList.data[2*(notSilenceCount)] = notSilenceRangeStartIndex;
             notSilenceRangeList.data[2*(notSilenceCount) + 1] = notSilenceRangeEndIndex;
             notSilenceCount ++;
-            LOGD("get not silence range, %d:%d\n", notSilenceRangeList.data[2*(index -1)], notSilenceRangeList.data[2*(index -1) + 1]);
+            LOGD("get not silence range, %d:%d", notSilenceRangeList.data[2*(index -1)], notSilenceRangeList.data[2*(index -1) + 1]);
         }
     }
     notSilenceRangeList.length = 2*notSilenceCount;
