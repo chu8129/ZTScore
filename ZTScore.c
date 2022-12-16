@@ -17,7 +17,9 @@
 #define SAMPLE_RATE  48000 // 采样率
 #define MAX_DISTANCE 2147483647
 #define BITS 16 // 采样位深
-#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
+#define MIN(X, Y) ((X)<(Y)?(X) : (Y))
+#define MAX(a,b) ((a)>(b)?(a):(b))
+#define LIMIT(a) (MAX(0, MIN(1, a)))
 
 char* getsubstr(char *s, regmatch_t *pmatch)
 {
@@ -431,12 +433,7 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
     float rhythmGrade = get_rhythmGrade(
         lyricMiddleTimes, existsTimeRangeCount - 1, splitMiddleTimes, splitMiddleTimesStruct.length);
 
-    if (rhythmGrade > 1) {
-        rhythmGrade = 1;
-    }
-    if (rhythmGrade < 0) {
-        rhythmGrade = 0;
-    }
+    rhythmGrade = LIMIT(rhythmGrade);
     LOGD("节奏分:%.3f", rhythmGrade);
 
     // 情感分
@@ -453,19 +450,14 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
             partPcmArray[copyFrameIndex] = value;
         }
         splitDbfs[index] = get_dBFS(partPcmArray, copyLength, BITS);
-        LOGD("%.3f ->", splitDbfs[index]);
+        LOGD("emotion:range:rms: %.3f", splitDbfs[index]);
         
         free(partPcmArray);
     }
 
 
     float emotionGrade = get_emotionGrade(splitRangeTimes, splitMiddleTimesStruct.length, splitDbfs, notSilenceRange.length/2);
-    if (emotionGrade > 1) {
-        emotionGrade = 1;
-    }
-    if (emotionGrade < 0) {
-        emotionGrade = 0;
-    }
+    emotionGrade = LIMIT(emotionGrade);
     LOGD("情感分:%.3f", emotionGrade);
 
     free(splitRangeTimes);
