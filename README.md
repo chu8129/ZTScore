@@ -25,3 +25,6 @@
 ### 日志vs本读读取的pcm
 ![image](https://github.com/chu8129/ZTScore/blob/qw/WeChatWorkScreenshot_3df7e0b7-bbd9-4f51-9d47-a3336bd6f6a1.png)
 ### pcm图(上图:原始pcm值,中图下图:转int16后)
+![image](https://github.com/chu8129/ZTScore/blob/qw/Figure_1.png)
+### 转换后的音频
+![]
