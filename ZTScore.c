@@ -148,7 +148,7 @@ struct IndexRange  get_notSilenceRangeLogic(int lyricIndex, int audio[], int len
         }
     }
 
-    LOGD("======== silence index ======updateSilenceIndex:%d\n", updateSilenceIndex);
+    LOGD("======== silence index ======updateSilenceIndex:%d", updateSilenceIndex);
     for (int __index=0; __index < updateSilenceIndex/2; __index++){
         LOGD("silence range %d -> %d", silenceIndexList[2 * __index], silenceIndexList[2 * __index + 1]);
     }
@@ -253,7 +253,7 @@ struct IndexRange  get_splitMiddleTimes(float addZerorRangeTimes[], int rangeCou
         float value = (float) (addZerorRangeTimes[2*index] + addZerorRangeTimes[2*index + 1]) / 2;
         if (value == 0){continue;}
         middleTimes[activateRangeCount] =  value;
-        LOGD("v1:%.1f, v2:%.1f, add value:%.1f\n", addZerorRangeTimes[2*index], addZerorRangeTimes[2*index + 1], middleTimes[activateRangeCount]);
+        LOGD("v1:%.1f, v2:%.1f, add value:%.1f", addZerorRangeTimes[2*index], addZerorRangeTimes[2*index + 1], middleTimes[activateRangeCount]);
         activateRangeCount ++;
     }
     
@@ -274,7 +274,7 @@ struct IndexRange  get_splitMiddleTimes(float addZerorRangeTimes[], int rangeCou
 struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int framesCount, float lyricMiddleTimeArray[], int lyricRangeCount, int channels, int sr, int bits){
 
     float dBFS = get_dBFS(audioFrames, framesCount, bits);
-    LOGD("source frams:%d, bits:%d, fs:%.3f\n", framesCount, bits, dBFS);
+    LOGD("source frams:%d, bits:%d, fs:%.3f", framesCount, bits, dBFS);
 
     int min_silence_ms[4] = {110, 90, 70, 50};
     float dBFS_rate[8] = {0.9, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.25};
@@ -285,7 +285,7 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
     int loopCount = 0;
     for (int silence_ms_index = 0; silence_ms_index < sizeof(min_silence_ms)/sizeof(min_silence_ms[0]); silence_ms_index ++ ){
         for (int dBFS_index = 0; dBFS_index < sizeof(dBFS_rate)/sizeof(dBFS_rate[0]); dBFS_index ++) {
-            LOGD(">>>>>>>> >>>>>>> .>>>>>>>>>> loopCount:%d  silence_ms:%d, dBFS:%f\n", loopCount, min_silence_ms[silence_ms_index], dBFS_rate[dBFS_index]);
+            LOGD(">>>>>>>> >>>>>>> .>>>>>>>>>> loopCount:%d  silence_ms:%d, dBFS:%f", loopCount, min_silence_ms[silence_ms_index], dBFS_rate[dBFS_index]);
             loopCount ++;
             // 单位 frame, [length, (frame1, frame2, ...)]
             struct IndexRange  notSilenceRange = get_notSilenceRangeLogic(lyricIndex, audioFrames, framesCount, min_silence_ms[silence_ms_index], dBFS * dBFS_rate[dBFS_index], channels, sr, bits);
@@ -379,7 +379,7 @@ float get_emotionGrade(float splitTimes[], int splitRangeCount, float dbfsArrays
         if (value > timeMax){timeMax = value;}
         if (value < timeMin){timeMin = value;}
     }
-    LOGD("声音持续, 最大:%.3f, 最小:%.3f\n", timeMax, timeMin);
+    LOGD("声音持续, 最大:%.3f, 最小:%.3f", timeMax, timeMin);
 
     float durationsGrade = 1 - timeMin / timeMax;
 
@@ -435,7 +435,7 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
     if (rhythmGrade < 0) {
         rhythmGrade = 0;
     }
-    LOGD("节奏分:%.3f\n", rhythmGrade);
+    LOGD("节奏分:%.3f", rhythmGrade);
 
     // 情感分
     float splitDbfs[notSilenceRange.length/2];
@@ -456,7 +456,6 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
         
         free(partPcmArray);
     }
-    LOGD("\n");
 
 
     float emotionGrade = get_emotionGrade(splitRangeTimes, splitMiddleTimesStruct.length, splitDbfs, notSilenceRange.length/2);
@@ -466,7 +465,7 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
     if (emotionGrade < 0) {
         emotionGrade = 0;
     }
-    LOGD("情感分:%.3f\n", emotionGrade);
+    LOGD("情感分:%.3f", emotionGrade);
 
     free(splitRangeTimes);
     free(lyricMiddleTimes);
