@@ -379,6 +379,12 @@ float get_emotionGrade(float splitTimes[], int splitRangeCount, float dbfsArrays
         if (value < dbfsMin){dbfsMin=value;}
     }
     float dbfsGrade = fabs(dbfsMax - dbfsMin)/15;
+
+    // 增加异常判断
+    if (dbfsMax < -80){dbfsGrade=0;}
+    if (dbfsMin > -30){dbfsGrade=0;}
+    if (fabs(dbfsMax - dbfsMin) > 12){dbfsGrade=0;}
+
     LOGD("音频幅度, 最大:%.3f, 最小:%.3f, 得分:%.3f", dbfsMax, dbfsMin, dbfsGrade);
 
     float returnGrade = 0.4 * durationsGrade + 0.6 * dbfsGrade;
@@ -419,8 +425,8 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
         LOGD("best range [%.0f, %.0f], [%d:%d]",
             1.0 * notSilenceRange.data[2*index] / CHANNELS / SAMPLE_RATE * 1000,
             1.0 * notSilenceRange.data[2*index + 1] / CHANNELS / SAMPLE_RATE * 1000,
-            1.0 * notSilenceRange.data[2*index],
-            1.0 * notSilenceRange.data[2*index + 1]
+            notSilenceRange.data[2*index],
+            notSilenceRange.data[2*index + 1]
         );
     }
     // 节奏分
@@ -484,10 +490,11 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
         int transValue = value;
         if (transValue > 32767){transValue = value - 65536;}
 
-        int newValue = (int) (pow(1.0 * transValue / 128, 2));
+        // int newValue = (int) (pow(1.0 * transValue / 128, 2)); error
+        int newValue = (int)(1.0 * transValue / 32768 * 256 * transValue / 32768 * 256);
 
         if (i < 960){
-            LOGD("raw value:%d, transf value:%d, to 8bit:%d", value, transValue, sqrt(newValue));
+            LOGD("raw value:%d, transf value:%d, to 8bit^2:%d", value, transValue, newValue);
         }
 
         intPcmList[i] = newValue;
