@@ -21,3 +21,7 @@
     储存是小端:array[2*index + 1] << 8 | array[2*index]
     由于使用的是bit, 故>if (transValue > 32767){transValue = value - 65536;}
 ```
+
+### 日志vs本读读取的pcm
+![image](https://github.com/chu8129/ZTScore/blob/qw/WeChatWorkScreenshot_3df7e0b7-bbd9-4f51-9d47-a3336bd6f6a1.png)
+### pcm图(上图:原始pcm值,中图下图:转int16后)
