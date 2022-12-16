@@ -425,8 +425,8 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
         LOGD("best range [%.0f, %.0f], [%d:%d]",
             1.0 * notSilenceRange.data[2*index] / CHANNELS / SAMPLE_RATE * 1000,
             1.0 * notSilenceRange.data[2*index + 1] / CHANNELS / SAMPLE_RATE * 1000,
-            1.0 * notSilenceRange.data[2*index],
-            1.0 * notSilenceRange.data[2*index + 1]
+            notSilenceRange.data[2*index],
+            notSilenceRange.data[2*index + 1]
         );
     }
     // 节奏分
