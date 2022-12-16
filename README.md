@@ -27,4 +27,4 @@
 ### pcm图(上图:原始pcm值,中图下图:转int16后)
 ![image](https://github.com/chu8129/ZTScore/blob/qw/Figure_1.png)
 ### 转换后的音频
-![]
+![wav](https://github.com/chu8129/ZTScore/blob/qw/pcm_0.wav)
