@@ -492,7 +492,7 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
     intPcmList = malloc(sizeof(int) * intPcmLength);
     memset(intPcmList, 0, sizeof(int) * intPcmLength);
     for (int i = 0; i < intPcmLength; i++){
-        int value = ((int)((pcmList[2*i]<<8) | pcmList[2*i+1])) - 32768;
+        int value = ((int)((pcmList[2*i + ]<<8) | pcmList[2*i])) - 65536;
         int newValue = (int)(value / 32768 * 256 * value / 32768 * 256);
         intPcmList[i] = newValue;
     }
