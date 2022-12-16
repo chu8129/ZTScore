@@ -198,7 +198,7 @@ struct IndexRange  get_notSilenceRangeLogic(int lyricIndex, int audio[], int len
     for (int index=loopStartIndex; index < silenceRangeIndex - 1; index++){
         int notSilenceRangeStartIndex = silenceIndexRange[2*index + 1];
         int notSilenceRangeEndIndex = silenceIndexRange[2*(index + 1)];
-        LOGD("in get_notSilenceRangeLogic, get not silence range, index:%d, %d - %d = %d >? %d,  %f:%f, range index:%d",
+        LOGD("in get_notSilenceRangeLogic, get not silence range, index:%d, %d - %d = %d >? %d,  %.1f:%.1f, range index:%d",
                 index,
                 notSilenceRangeStartIndex,
                 notSilenceRangeEndIndex,
