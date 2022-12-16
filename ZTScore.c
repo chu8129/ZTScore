@@ -379,6 +379,12 @@ float get_emotionGrade(float splitTimes[], int splitRangeCount, float dbfsArrays
         if (value < dbfsMin){dbfsMin=value;}
     }
     float dbfsGrade = fabs(dbfsMax - dbfsMin)/15;
+
+    // 增加异常判断
+    if (dbfsMax < -80){dbfsGrade=0;}
+    if (dbfsMin > -30){dbfsGrade=0;}
+    if (fabs(dbfsMax - dbfsMin) > 12){dbfsGrade=0;}
+
     LOGD("音频幅度, 最大:%.3f, 最小:%.3f, 得分:%.3f", dbfsMax, dbfsMin, dbfsGrade);
 
     float returnGrade = 0.4 * durationsGrade + 0.6 * dbfsGrade;
