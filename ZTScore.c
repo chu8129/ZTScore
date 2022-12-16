@@ -484,7 +484,7 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
         int transValue = value;
         if (transValue > 32767){transValue = value - 65536;}
 
-        int newValue = (int) pow(1.0 * transValue / 128, 2);
+        int newValue = (int) (pow(1.0 * transValue / 128, 2));
 
         if (i < 960){
             LOGD("raw value:%d, transf value:%d, to 8bit:%d", value, transValue, sqrt(newValue));
