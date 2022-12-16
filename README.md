@@ -27,4 +27,7 @@
 ### pcm图(上图:原始pcm值,中图下图:转int16后)
 ![image](https://github.com/chu8129/ZTScore/blob/qw/Figure_1.png)
 ### 转换后的音频
-[![wav](https://bkimg.cdn.bcebos.com/pic/ac6eddc451da81cb0bea2ede5d66d01609243190?x-bce-process=image/watermark,image_d2F0ZXIvYmFpa2U5Mg==,g_7,xp_5,yp_5)](https://github.com/chu8129/ZTScore/blob/qw/pcm_0.wav)
+[![wav][file]](https://github.com/chu8129/ZTScore/blob/qw/pcm_0.wav)
+
+
+[file]:data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAB9JREFUOE9jZKAQMFKon2HUAIbRMGAYDQNQPhr4vAAAJpgAEX/anFwAAAAASUVORK5CYII=
