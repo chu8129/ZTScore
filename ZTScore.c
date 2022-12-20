@@ -81,7 +81,7 @@ float dtw(float singerPcm[], int singerLength, float userPcm[], int userLength){
             float z = costMatrix[indexX][indexY - 1];
             float minValue = MIN(MIN(x, y), z);
             float distance = distanceMatric[indexX - 1][indexY - 1];
-            //LOGD("min distance:%d distance:%d, indexx:%d, indexxy:%d, x:%d, y:%d, z:%d, i,2:%d\n", 
+            //LOGD("min distance:%d distance:%d, indexx:%d, indexxy:%d, x:%d, y:%d, z:%d, i,2:%d\n",
             //  minValue, distance, indexX, indexY, x, y, z, costMatrix[1][2]);
             costMatrix[indexX][indexY] = minValue + distance;
             //LOGD("update x:%d, y:%d, value:%d\n", indexX, indexY, costMatrix[indexX][indexY]);
@@ -127,7 +127,7 @@ struct IndexRange  get_notSilenceRangeLogic(int lyricIndex, int audio[], int len
             silenceFlagList[index] = 1;
         }
         LOGD("lyric:%d, startIdx:%d, minSilenceFrams:%d, maxFrame:%d, endIdx:%d, rms:%.2f, flag:%d, reversThreshold:%.2f",
-            lyricIndex, startIndex, minSilenceFrams, length, startIndex + minSilenceFrams, 
+            lyricIndex, startIndex, minSilenceFrams, length, startIndex + minSilenceFrams,
             rms, silenceFlagList[index], reversThreshold);
     }
 
@@ -171,8 +171,8 @@ struct IndexRange  get_notSilenceRangeLogic(int lyricIndex, int audio[], int len
             silenceIndexRange[2 * silenceRangeIndex] = currentPointer;
             silenceIndexRange[2 * silenceRangeIndex + 1] = prevPointer + minSilenceFrams;
             silenceRangeIndex ++;
-            LOGD("in get_notSilenceRangeLogic, add silence range, ms, %.1f:%.1f, frame, %d:%d", 
-                1000.0 * currentPointer/channels/sr, 1000.0 * (prevPointer + minSilenceFrams)/channels/sr, 
+            LOGD("in get_notSilenceRangeLogic, add silence range, ms, %.1f:%.1f, frame, %d:%d",
+                1000.0 * currentPointer/channels/sr, 1000.0 * (prevPointer + minSilenceFrams)/channels/sr,
                 currentPointer, prevPointer + minSilenceFrams);
             currentPointer = silenceIndexList[index];
         }
@@ -213,7 +213,7 @@ struct IndexRange  get_notSilenceRangeLogic(int lyricIndex, int audio[], int len
             notSilenceRangeList.data[2*(notSilenceCount)] = notSilenceRangeStartIndex;
             notSilenceRangeList.data[2*(notSilenceCount) + 1] = notSilenceRangeEndIndex;
             notSilenceCount ++;
-            LOGD("get not silence range, %d:%d", 
+            LOGD("get not silence range, %d:%d",
                 notSilenceRangeList.data[2*(index -1)], notSilenceRangeList.data[2*(index -1) + 1]);
         }
     }
@@ -256,9 +256,9 @@ struct IndexRange  get_splitMiddleTimes(float addZerorRangeTimes[], int rangeCou
         float value = (float) (addZerorRangeTimes[2*index] + addZerorRangeTimes[2*index + 1]) / 2;
         if (value == 0){continue;}
         middleTimes[activateRangeCount] =  value;
-        LOGD("range to middle index, v1:%.1f, v2:%.1f, add value:%.1f", 
-            addZerorRangeTimes[2*index], 
-            addZerorRangeTimes[2*index + 1], 
+        LOGD("range to middle index, v1:%.1f, v2:%.1f, add value:%.1f",
+            addZerorRangeTimes[2*index],
+            addZerorRangeTimes[2*index + 1],
             middleTimes[activateRangeCount]);
         activateRangeCount ++;
     }
@@ -286,16 +286,16 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
     for (int silence_ms_index = 0; silence_ms_index < sizeof(min_silence_ms)/sizeof(min_silence_ms[0]); silence_ms_index ++ ){
         for (int dBFS_index = 0; dBFS_index < sizeof(dBFS_rate)/sizeof(dBFS_rate[0]); dBFS_index ++) {
 
-            LOGD("loopCount:%d  silence_ms:%d, dBFS:%f", 
+            LOGD("loopCount:%d  silence_ms:%d, dBFS:%f",
                 loopCount, min_silence_ms[silence_ms_index], dBFS_rate[dBFS_index]);
 
             loopCount ++;
 
             // 单位 frame, [length, (frame1, frame2, ...)]
             struct IndexRange  notSilenceRange = get_notSilenceRangeLogic(
-                lyricIndex, 
-                audioFrames, 
-                framesCount, 
+                lyricIndex,
+                audioFrames,
+                framesCount,
                 min_silence_ms[silence_ms_index],
                 dBFS * dBFS_rate[dBFS_index],
                 channels,
@@ -323,7 +323,7 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
             if ( rangeScore < minScore){
                 returnNotSilenceRange = notSilenceRange;
                 for (int _index=0; _index < returnNotSilenceRange.length/2; _index++){
-                    LOGD("better split, start:%d, end:%d", 
+                    LOGD("better split, start:%d, end:%d",
                         returnNotSilenceRange.data[2*_index], returnNotSilenceRange.data[2 * _index + 1]);
                 }
                 minScore = rangeScore;
@@ -387,7 +387,7 @@ float get_emotionGrade(float splitTimes[], int splitRangeCount, float dbfsArrays
 
     LOGD("音频幅度, 最大:%.3f, 最小:%.3f, 得分:%.3f", dbfsMax, dbfsMin, dbfsGrade);
 
-    float returnGrade = 0.4 * durationsGrade + 0.6 * dbfsGrade;
+    float returnGrade = 0.7 * durationsGrade + 0.3 * dbfsGrade;
     LOGD("发声时长情感分:%.3f, 发声音量情感分:%.3f, 加权:%.3f", durationsGrade, dbfsGrade, returnGrade);
     return returnGrade;
 }
@@ -409,13 +409,13 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
     // 歌词中间值数组
     // existsTimeRangeCount 歌词有多少个字 - 1，后面的 3 个可以外边传进来）
     struct IndexRange notSilenceRange = get_notSilenceRange(
-        0, 
-        cutAudioFrame, 
-        segmentFrames, 
-        lyricMiddleTimes, 
-        existsTimeRangeCount, 
-        CHANNELS, 
-        SAMPLE_RATE, 
+        0,
+        cutAudioFrame,
+        segmentFrames,
+        lyricMiddleTimes,
+        existsTimeRangeCount,
+        CHANNELS,
+        SAMPLE_RATE,
         BITS
         );
     int rangeNum = notSilenceRange.length/2;
@@ -501,4 +501,3 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
     }
     return innerCalculateGrade(intPcmList, intPcmLength, lyricList, lyricLength);
 }
-
