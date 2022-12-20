@@ -8,11 +8,8 @@
 #include <time.h>
 
 #define  LOG_TAG    "MusicAnalysis_MusicIntonationMgr_qw"
-
-time_t time_ptr;
-int LOG_TIMES = 0;
 //#define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
-#define LOGD(...) {time(&time_ptr);printf(LOG_TAG);printf(" timeIndex:%ld sortIndex:%d ", time_ptr, LOG_TIMES++);printf(__VA_ARGS__);printf("\n");}
+#define LOGD(...) {printf(LOG_TAG);printf(" ");printf(__VA_ARGS__);printf("\n");}
 
 #define W  128
 #define MAX_WORDS_ONE_LINE 20 // 最大的字数（其实是 19 个字，前面有两个是记录开始时间），建议改到 100
@@ -99,9 +96,6 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
         );
     // 非静默区间
     
-    struct IndexRange notSilenceRangeList2 = {0,  malloc( 2 * (1 + 1) * sizeof(int))};
-    memset(notSilenceRangeList2.data, 0 , 2 * (1 + 1) * sizeof(notSilenceRangeList2.data[0]));
-
     float reversThreshold = reverse_dBFS(dbfs, bits);
     int seek_step = 10.0 / 1000 * channels * sr;
     int minSilenceFrams = (int) (1.0 * silence_min / 1000 * channels * sr);
@@ -227,6 +221,7 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
     free(caculateStartIndex);
     free(partPcmList);
     free(silenceFlagList);
+
     return notSilenceRangeList;
 }
 
@@ -283,10 +278,10 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
     LOGD("source frams:%d, bits:%d, fs:%.3f", framesCount, bits, dBFS);
 
     int min_silence_ms[4] = {110, 90, 70, 50};
-    float dBFS_rate[8] = {0.9, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.25};
+    float dBFS_rate[8] = {1, 1.05, 1.1, 1.15, 1.2, 1.25};
 
     float minScore = 999999;
-    struct IndexRange returnNotSilenceRange = {2, malloc(2 * sizeof(int))};
+    struct IndexRange returnNotSilenceRange = {0, malloc(2 * sizeof(int))};
 
     int loopCount = 0;
     for (int silence_ms_index = 0; silence_ms_index < sizeof(min_silence_ms)/sizeof(min_silence_ms[0]); silence_ms_index ++ ){
@@ -428,7 +423,7 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
 
     LOGD("============== bestest result:%d length:%d ================", 0, rangeNum);
     for (int index =0; index < rangeNum; index ++){
-        LOGD("best range [%.0f, %.0f], [%d:%d]",
+        LOGD("best range [%.0f, %.0f], [%ld:%ld]",
             1.0 * notSilenceRange.data[2*index] / CHANNELS / SAMPLE_RATE * 1000,
             1.0 * notSilenceRange.data[2*index + 1] / CHANNELS / SAMPLE_RATE * 1000,
             notSilenceRange.data[2*index],
@@ -506,5 +501,6 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
         intPcmList[i] = newValue;
     }
     return innerCalculateGrade(intPcmList, intPcmLength, lyricList, lyricLength);
+    // 如何释放intPcmList
 }
 
