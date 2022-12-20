@@ -5,11 +5,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <regex.h>
+#include <time.h>
 
 #define  LOG_TAG    "MusicAnalysis_MusicIntonationMgr_qw"
 
+time_t time_ptr;
+int LOG_TIMES = 0;
 //#define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
-#define LOGD(...) {printf(LOG_TAG);printf(" ");printf(__VA_ARGS__);printf("\n");}
+#define LOGD(...) {time(&time_ptr);printf(LOG_TAG);printf(" timeIndex:%ld sortIndex:%d ", time_ptr, LOG_TIMES++);printf(__VA_ARGS__);printf("\n");}
 
 #define W  128
 #define MAX_WORDS_ONE_LINE 20 // 最大的字数（其实是 19 个字，前面有两个是记录开始时间），建议改到 100
@@ -90,7 +93,10 @@ float dtw(float singerPcm[], int singerLength, float userPcm[], int userLength){
     return costMatrix[singerLength][userLength];
 }
 
-struct IndexRange  get_notSilenceRangeLogic(int lyricIndex, int audio[], int length, int silence_min, float dbfs, int channels, int sr, int bits){
+struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int length, int silence_min, float dbfs, int channels, int sr, int bits){
+    LOGD("get not silence range, default value, lyricIndex:%d, audioLength:%d, silenceMin:%d, dbfs:%.2f, channels:%d, sr:%d, bits:%d",
+            lyricIndex, length, silence_min, dbfs, channels, sr, bits
+        );
     // 非静默区间
     
     struct IndexRange notSilenceRangeList2 = {0,  malloc( 2 * (1 + 1) * sizeof(int))};
@@ -191,13 +197,13 @@ struct IndexRange  get_notSilenceRangeLogic(int lyricIndex, int audio[], int len
 
     // 非静默区间
     struct IndexRange notSilenceRangeList = {0,  malloc( 2 * (silenceRangeIndex + 1) * sizeof(int))};
-    memset(notSilenceRangeList.data, 0 , 2 * (silenceRangeIndex + 1) * sizeof(notSilenceRangeList.data[0]));
+    memset(notSilenceRangeList.data, 0 , 2 * (silenceRangeIndex + 1) * sizeof(int));
 
-    int loopStartIndex = 0;
-    // if (silenceIndexRange[1] == 0 & silenceIndexRange[2] == 0){loopStartIndex = 1;}
     int notSilenceCount = 0;
     int minDelteSilenceRangeFrames = 0.02 * channels * sr;
-    for (int index=loopStartIndex; index < silenceRangeIndex - 1; index++){
+    LOGD("channels:%d, sr:%d, min silence frames:%d", channels, sr, minDelteSilenceRangeFrames);
+
+    for (int index=0; index < silenceRangeIndex - 1; index++){
         int notSilenceRangeStartIndex = silenceIndexRange[2*index + 1];
         int notSilenceRangeEndIndex = silenceIndexRange[2*(index + 1)];
         LOGD("in get_notSilenceRangeLogic, get not silence range, index:%d, %d - %d = %d >? %d,  %.1f:%.1f, range index:%d",
@@ -303,7 +309,7 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
                 bits);
             
             // 单位 ms
-            LOGD("not silence range length:%d\n", notSilenceRange.length);
+            LOGD("not silence range length:%d", notSilenceRange.length);
             float* splitRangeTimes = get_frameIndexToTimeIndex(notSilenceRange, channels, sr);
             struct IndexRange middleTimeArrayStruct = get_splitMiddleTimes(splitRangeTimes, notSilenceRange.length);
             float middleTimeArray[middleTimeArrayStruct.length];
