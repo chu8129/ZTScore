@@ -247,7 +247,8 @@ float* get_frameIndexToTimeIndex(struct IndexRange notSilenceRange, int channels
     int rangeCount = notSilenceRange.length;
     float* toTimes = (float *)malloc(rangeCount * sizeof(float));
     for (int index =0; index < rangeCount; index++){
-        toTimes[index] = notSilenceRange.data[index] * 1000 / channels / sr;
+        toTimes[index] = notSilenceRange.data[index] * 1.0/ channels / sr * 1000;
+        LOGD("frame to index, frame:%d, ms:%.1f", notSilenceRange.data[index], toTimes[index]);
     }
     return toTimes;
 }
