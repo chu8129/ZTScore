@@ -30,7 +30,7 @@ struct IndexRange {
 };
 
 float get_rms(int pcmList[], int length){
-    int sum = 0;
+    float sum = 0;
     for (int index = 0; index < length; index ++){
         sum += pcmList[index];
     }
@@ -276,13 +276,29 @@ struct IndexRange  get_splitMiddleTimes(float addZerorRangeTimes[], int rangeCou
 struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int framesCount, float lyricMiddleTimeArray[], int lyricRangeCount, int channels, int sr, int bits){
 
     float dBFS = get_dBFS(audioFrames, framesCount, bits);
-    LOGD("source frams:%d, bits:%d, fs:%.3f", framesCount, bits, dBFS);
+    LOGD("source frams:%d, bits:%d, dbfs:%.3f", framesCount, bits, dBFS);
+
+    struct IndexRange returnNotSilenceRange = {0, (int *)malloc(2 * sizeof(int))};
+    if (dBFS < -1000){
+        float sum =0;
+        int minValue = 65536;
+        int maxValue = 0;
+        for (int i =0;i<framesCount; i++){
+            int value = audioFrames[i];
+            sum += value;
+            if (value < minValue){minValue = value;}
+            if (value > maxValue){maxValue = value;}
+        }
+        float rms = get_rms(audioFrames, framesCount);
+        LOGD("for check, audio length:%d, sum:%.1f, bits:%d, rms:%.2f, max value:%d, min value:%d", framesCount, sum, bits, rms, maxValue, minValue);
+
+        return returnNotSilenceRange;
+    }
 
     int min_silence_ms[4] = {110, 90, 70, 50};
-    float dBFS_rate[8] = {1, 1.1, 1.15, 1.2, 1.25};
+    float dBFS_rate[5] = {1, 1.1, 1.15, 1.2, 1.25};
 
     float minScore = 999999;
-    struct IndexRange returnNotSilenceRange = {0, (int *)malloc(2 * sizeof(int))};
 
     int loopCount = 0;
     for (int silence_ms_index = 0; silence_ms_index < sizeof(min_silence_ms)/sizeof(min_silence_ms[0]); silence_ms_index ++ ){
@@ -390,7 +406,7 @@ float get_emotionGrade(float splitTimes[], int splitRangeCount, float dbfsArrays
 
     LOGD("音频幅度, 最大:%.3f, 最小:%.3f, 得分:%.3f", dbfsMax, dbfsMin, dbfsGrade);
 
-    float returnGrade = 0.7 * durationsGrade + 0.3 * dbfsGrade;
+    float returnGrade = 0.7 * LIMIT(durationsGrade) + 0.3 * LIMIT(dbfsGrade);
     LOGD("发声时长情感分:%.3f, 发声音量情感分:%.3f, 加权:%.3f", durationsGrade, dbfsGrade, returnGrade);
     return returnGrade;
 }
