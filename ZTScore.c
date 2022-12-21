@@ -11,11 +11,9 @@
 #define  LOG_TAG    "MusicAnalysis_MusicIntonationMgr_ccode"
 
 #include <android/log.h>
-//#define  LOGD(...)  {struct timespec spec;clock_gettime(CLOCK_REALTIME, &spec);uint64_t ti = (uint64_t) spec.tv_sec * 1000000000L + (uint64_t) spec.tv_nsec;char _LOG_TAG[60];sprintf(_LOG_TAG, ">%s>%ld>", LOG_TAG, (long) ti); __android_log_print(ANDROID_LOG_DEBUG, _LOG_TAG, __VA_ARGS__);}
-#define  LOGD(...)  {__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__);} // 性能选择
+#define  LOGD(...)  {__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__);}
 //#define LOGD(...) {printf(LOG_TAG);printf(" ");printf(__VA_ARGS__);printf("\n");}
 
-#define W  128
 #define MAX_WORDS_ONE_LINE 20 // 最大的字数（其实是 19 个字，前面有两个是记录开始时间），建议改到 100
 #define CHANNELS  2 // 声道
 #define SAMPLE_RATE  48000 // 采样率
@@ -24,14 +22,6 @@
 #define MIN(X, Y) ((X)<(Y)?(X) : (Y))
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define LIMIT(a) (MAX(0, MIN(1, a)))
-
-char* getsubstr(char *s, regmatch_t *pmatch)
-{
-    static char buf[100] = {0};
-    memset(buf, 0, sizeof(buf));
-    memcpy(buf, s+pmatch->rm_so, pmatch->rm_eo - pmatch->rm_so);
-    return buf;
-}
 
 
 struct IndexRange {
@@ -157,6 +147,11 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
     }
 
     LOGD("silence range count: %d", updateSilenceIndex);
+    /*
+    for (int __index=0; __index < updateSilenceIndex/2; __index++){
+        LOGD("silence range: %d -> %d", silenceIndexList[2 * __index], silenceIndexList[2 * __index + 1]);
+    }
+     */
 
 
     // 提取连续区间
@@ -226,7 +221,6 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
     free(caculateStartIndex);
     free(partPcmList);
     free(silenceFlagList);
-
     return notSilenceRangeList;
 }
 
@@ -327,10 +321,8 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
                  lyricRangeCount, middleTimeArrayLength, minDistance, minDistance/lyricRangeCount, rangeScore, minScore);
 
             if ( rangeScore < minScore){
-
                 free(returnNotSilenceRange.data);
                 returnNotSilenceRange = notSilenceRange;
-
                 for (int _index=0; _index < returnNotSilenceRange.length/2; _index++){
                     LOGD("better split, start:%d, end:%d",
                          returnNotSilenceRange.data[2*_index], returnNotSilenceRange.data[2 * _index + 1]);
@@ -500,13 +492,8 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
     float *lRes = NULL;
 
     // 奔溃信号处理
-//    signal(SIGSEGV, sig_func);
-//    signal(SIGILL, sig_func);
-//    signal(SIGBUS, sig_func);
 //    signal(SIGFPE, sig_func);
 //    signal(SIGSEGV, sig_func);
-//    signal(SIGXCPU, sig_func);
-//    signal(SIGXFSZ, sig_func);
 
     int *intPcmList;
     int intPcmLength = pcmLength / 2;
@@ -520,11 +507,11 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
 
         // int newValue = (int) (pow(1.0 * transValue / 128, 2)); error
         int newValue = (int)(1.0 * transValue / 32768 * 256 * transValue / 32768 * 256);
-
-        if (i < MIN(960, intPcmLength)){
+        /*
+        if (i < 960){
             LOGD("raw value:%d,%d > %d, transf value:%d, to 8bit^2:%d", pcmList[2*i], pcmList[2*i + 1], value, transValue, newValue);
         }
-
+        */
         intPcmList[i] = newValue;
     }
     lRes = innerCalculateGrade(intPcmList, intPcmLength, lyricList, lyricLength);
@@ -535,17 +522,12 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
         ret[0] = lRes[0];
         ret[1] = lRes[1];
     }
-
 //    free(intPcmList); // 释放就报错。。。
 //    free(lRes);
-
     LOGD("ready return, %.3f,%.3f", ret[0], ret[1]);
-
-
-
     return ret;
 }
-
+// 安卓2022/12/20版本需要此三个函数
 float *testCharData(unsigned char pcmList[], int pcmLength, int lyricList[], int lyricLength) {
     float* resultData = (float*)malloc(2);
     resultData[0] = pcmList[0];
