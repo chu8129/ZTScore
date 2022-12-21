@@ -132,9 +132,9 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
         if (rms > reversThreshold){
             silenceFlagList[index] = 1;
         }
-        LOGD("lyric:%d, startIdx:%d, minSilenceFrams:%d, maxFrame:%d, endIdx:%d, rms:%.2f, flag:%d, reversThreshold:%.2f",
-            lyricIndex, startIndex, minSilenceFrams, length, startIndex + minSilenceFrams,
-            rms, silenceFlagList[index], reversThreshold);
+//        LOGD("lyric:%d, startIdx:%d, minSilenceFrams:%d, maxFrame:%d, endIdx:%d, rms:%.2f, flag:%d, reversThreshold:%.2f",
+//            lyricIndex, startIndex, minSilenceFrams, length, startIndex + minSilenceFrams,
+//            rms, silenceFlagList[index], reversThreshold);
     }
 
     // 取静默区间
@@ -156,10 +156,10 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
         }
     }
 
-    LOGD("silence range count: %d", updateSilenceIndex);
-    for (int __index=0; __index < updateSilenceIndex/2; __index++){
-        LOGD("silence range: %d -> %d", silenceIndexList[2 * __index], silenceIndexList[2 * __index + 1]);
-    }
+//    LOGD("silence range count: %d", updateSilenceIndex);
+//    for (int __index=0; __index < updateSilenceIndex/2; __index++){
+//        LOGD("silence range: %d -> %d", silenceIndexList[2 * __index], silenceIndexList[2 * __index + 1]);
+//    }
 
 
     // 提取连续区间
@@ -171,15 +171,15 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
 
     int silenceRangeIndex = 1;
     for (int index =1; index < silenceCount; index ++){
-        LOGD("index:%d, prevPointer:%d + seek_step:%d != index value:%d &  index value:%d > prevPointer:%d + minSilenceFrams:%d",
-            index, prevPointer, seek_step, silenceIndexList[index], silenceIndexList[index], prevPointer, minSilenceFrams);
+//        LOGD("index:%d, prevPointer:%d + seek_step:%d != index value:%d &  index value:%d > prevPointer:%d + minSilenceFrams:%d",
+//            index, prevPointer, seek_step, silenceIndexList[index], silenceIndexList[index], prevPointer, minSilenceFrams);
         if (((prevPointer + seek_step) != silenceIndexList[index]) & (silenceIndexList[index] > (prevPointer + minSilenceFrams))){
             silenceIndexRange[2 * silenceRangeIndex] = currentPointer;
             silenceIndexRange[2 * silenceRangeIndex + 1] = prevPointer + minSilenceFrams;
             silenceRangeIndex ++;
-            LOGD("in get_notSilenceRangeLogic, add silence range, ms, %.1f:%.1f, frame, %d:%d",
-                1000.0 * currentPointer/channels/sr, 1000.0 * (prevPointer + minSilenceFrams)/channels/sr,
-                currentPointer, prevPointer + minSilenceFrams);
+//            LOGD("in get_notSilenceRangeLogic, add silence range, ms, %.1f:%.1f, frame, %d:%d",
+//                1000.0 * currentPointer/channels/sr, 1000.0 * (prevPointer + minSilenceFrams)/channels/sr,
+//                currentPointer, prevPointer + minSilenceFrams);
             currentPointer = silenceIndexList[index];
         }
         if (silenceRangeIndex >= MAX_WORDS_ONE_LINE)break;
@@ -507,3 +507,4 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
     }
     return innerCalculateGrade(intPcmList, intPcmLength, lyricList, lyricLength);
 }
+
