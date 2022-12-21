@@ -6,15 +6,14 @@
 #include <string.h>
 #include <regex.h>
 #include <time.h>
+#include <signal.h>
 
-#define  LOG_TAG    "MusicAnalysis_MusicIntonationMgr_qw"
+#define  LOG_TAG    "MusicAnalysis_MusicIntonationMgr_ccode"
 
-time_t time_ptr;
-int LOG_TIMES = 0;
-//#define  LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
-#define LOGD(...) {time(&time_ptr);printf(LOG_TAG);printf(" timeIndex:%ld sortIndex:%d ", time_ptr, LOG_TIMES++);printf(__VA_ARGS__);printf("\n");}
+#include <android/log.h>
+#define  LOGD(...)  {__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__);}
+//#define LOGD(...) {printf(LOG_TAG);printf(" ");printf(__VA_ARGS__);printf("\n");}
 
-#define W  128
 #define MAX_WORDS_ONE_LINE 20 // 最大的字数（其实是 19 个字，前面有两个是记录开始时间），建议改到 100
 #define CHANNELS  2 // 声道
 #define SAMPLE_RATE  48000 // 采样率
@@ -220,7 +219,7 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
             notSilenceRangeList.data[2*(notSilenceCount) + 1] = notSilenceRangeEndIndex;
             notSilenceCount ++;
             LOGD("get not silence range, %d:%d",
-                notSilenceRangeList.data[2*(index -1)], notSilenceRangeList.data[2*(index -1) + 1]);
+                notSilenceRangeList.data[2*(notSilenceCount -1)], notSilenceRangeList.data[2*(notSilenceCount -1) + 1]);
         }
     }
     notSilenceRangeList.length = 2*notSilenceCount;
@@ -485,7 +484,21 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
     return res;
 }
 
+void sig_func(int sig)
+{
+    LOGD("error with signal:%d", sig);
+}
+
 float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], int lyricLength) {
+    /*奔溃信号处理*/
+    signal(SIGFPE, sig_func);
+    signal(SIGSEGV, sig_func);
+
+    /*正式逻辑*/
+    float *ret = (float *)malloc(2 * sizeof(float));
+    ret[0] = 0;ret[1]=0;
+    float *lRes = NULL;
+
     int *intPcmList;
     int intPcmLength = pcmLength / 2;
     intPcmList = malloc(sizeof(int) * intPcmLength);
@@ -505,6 +518,18 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
 
         intPcmList[i] = newValue;
     }
-    return innerCalculateGrade(intPcmList, intPcmLength, lyricList, lyricLength);
+
+    lRes = innerCalculateGrade(intPcmList, intPcmLength, lyricList, lyricLength);
+    LOGD("caculate return, %.3f,%.3f", lRes[0], lRes[1]);
+
+    if (NULL != lRes){
+        LOGD("update return array");
+        ret[0] = lRes[0];
+        ret[1] = lRes[1];
+    }
+//    free(intPcmList); // 释放就报错。。。
+//    free(lRes);
+    LOGD("ready return, %.3f,%.3f", ret[0], ret[1]);
+    return ret;
 }
 
