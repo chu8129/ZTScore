@@ -8,7 +8,7 @@
 #include <time.h>
 #include <signal.h>
 
-#define  LOG_TAG    "MusicAnalysis_MusicIntonationMgr_ccode"
+#define  LOG_TAG    "zgf"
 
 #include <android/log.h>
 #define  LOGD(...)  {__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__);}
