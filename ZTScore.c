@@ -279,7 +279,7 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
     LOGD("source frams:%d, bits:%d, fs:%.3f", framesCount, bits, dBFS);
 
     int min_silence_ms[4] = {110, 90, 70, 50};
-    float dBFS_rate[8] = {1.05, 1.1, 1.15, 1.2, 1.25};
+    float dBFS_rate[8] = {1, 1.1, 1.15, 1.2, 1.25};
 
     float minScore = 999999;
     struct IndexRange returnNotSilenceRange = {0, (int *)malloc(2 * sizeof(int))};
