@@ -285,7 +285,7 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
     float dBFS_rate[8] = {0.9, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.25};
 
     float minScore = 999999;
-    struct IndexRange returnNotSilenceRange = {2, malloc(2 * sizeof(int))};
+    struct IndexRange returnNotSilenceRange = {0, malloc(2 * sizeof(int))};
 
     int loopCount = 0;
     for (int silence_ms_index = 0; silence_ms_index < sizeof(min_silence_ms)/sizeof(min_silence_ms[0]); silence_ms_index ++ ){
