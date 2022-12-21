@@ -545,19 +545,3 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
     LOGD("ready return, %.3f,%.3f", ret[0], ret[1]);
     return ret;
 }
-// 安卓2022/12/20版本需要此三个函数
-float *testCharData(unsigned char pcmList[], int pcmLength, int lyricList[], int lyricLength) {
-    float* resultData = (float*)malloc(2);
-    resultData[0] = pcmList[0];
-    resultData[1] = pcmLength + lyricLength;
-    return resultData;
-}
-float *testStringData(unsigned char pcmList[], int pcmLength, int lyricList[], int lyricLength) {
-    float* resultData = (float*)malloc(2);
-    resultData[0] = pcmList[0];
-    resultData[1] = pcmLength + lyricLength;
-    return resultData;
-}
-float *calculateGradeInt(int pcmList[], int pcmLength, int lyricList[], int lyricLength) {
-    return innerCalculateGrade(pcmList, pcmLength, lyricList, lyricLength);
-}
