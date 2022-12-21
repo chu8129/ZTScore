@@ -227,6 +227,8 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
 
 float* get_LyricMiddleTimes(int lyricTimes[], int lyricTimeLength){
     float* lyricMiddleTimeArray = (float *)malloc(lyricTimeLength * sizeof(float));
+    memset(lyricMiddleTimeArray, 0, lyricTimeLength * sizeof(float));
+
     // 取时间中点 单位ms
     for (int index=0; index < lyricTimeLength -1; index++){
         lyricMiddleTimeArray[index] = lyricTimes[2*(index + 1)] + lyricTimes[2*(index + 1) + 1] / 2;
@@ -277,7 +279,7 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
     LOGD("source frams:%d, bits:%d, fs:%.3f", framesCount, bits, dBFS);
 
     int min_silence_ms[4] = {110, 90, 70, 50};
-    float dBFS_rate[8] = {1, 1.05, 1.1, 1.15, 1.2, 1.25};
+    float dBFS_rate[8] = {1.05, 1.1, 1.15, 1.2, 1.25};
 
     float minScore = 999999;
     struct IndexRange returnNotSilenceRange = {0, (int *)malloc(2 * sizeof(int))};
@@ -397,7 +399,7 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
     static float res[2];
     res[0] = 0;
     res[1] = 1;
-    if (segmentFrames < 48000 * 2 * 0.1){
+    if ((segmentFrames < SAMPLE_RATE * CHANNELS * 0.1) | (SAMPLE_RATE < 1) | (CHANNELS < 1)){
         LOGD("ERROR, audio length error: < 0.1S");
         return res;
     }
@@ -491,7 +493,7 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
 
     float *lRes = NULL;
 
-    // 奔溃信号处理
+    /*奔溃信号处理*/
 //    signal(SIGFPE, sig_func);
 //    signal(SIGSEGV, sig_func);
 
