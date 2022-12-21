@@ -157,11 +157,6 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
     }
 
     LOGD("silence range count: %d", updateSilenceIndex);
-    /*
-    for (int __index=0; __index < updateSilenceIndex/2; __index++){
-        LOGD("silence range: %d -> %d", silenceIndexList[2 * __index], silenceIndexList[2 * __index + 1]);
-    }
-     */
 
 
     // 提取连续区间
@@ -401,7 +396,7 @@ float get_emotionGrade(float splitTimes[], int splitRangeCount, float dbfsArrays
 
     LOGD("音频幅度, 最大:%.3f, 最小:%.3f, 得分:%.3f", dbfsMax, dbfsMin, dbfsGrade);
 
-    float returnGrade = 0.4 * durationsGrade + 0.6 * dbfsGrade;
+    float returnGrade = 0.7 * durationsGrade + 0.3 * dbfsGrade;
     LOGD("发声时长情感分:%.3f, 发声音量情感分:%.3f, 加权:%.3f", durationsGrade, dbfsGrade, returnGrade);
     return returnGrade;
 }
