@@ -38,7 +38,7 @@ struct IndexRange {
 };
 
 float get_rms(int pcmList[], int length){
-    int sum = 0;
+    float sum = 0;
     for (int index = 0; index < length; index ++){
         sum += pcmList[index];
     }
