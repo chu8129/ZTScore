@@ -355,7 +355,7 @@ float  get_rhythmGrade(float lyricTimes[], int lyricTimesLength, float splitTime
     }
     float minDistance = dtw(lyricTimes, lyricTimesLength, splitTimes, splitTimesLength);
     float meanDistance = minDistance / lyricTimesLength;
-    float grade =  1 - (meanDistance - 200)/1000 - 0.1 * abs(lyricTimesLength - splitTimesLength);
+    float grade =  1 - MAX(0, (meanDistance - 200)/1000) - 0.1 * abs(lyricTimesLength - splitTimesLength);
 
     LOGD("[grade]>>>>>>> min distance:%.3f, mean distance:%.3f, grade:%.5f", minDistance, meanDistance, grade);
     return grade;
