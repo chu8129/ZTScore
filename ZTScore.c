@@ -8,7 +8,7 @@
 #include <time.h>
 #include <signal.h>
 
-#define  LOG_TAG    "MusicAnalysis_MusicIntonationMgr_ccode"
+#define  LOG_TAG    "zgf"
 
 #include <android/log.h>
 #define  LOGD(...)  {__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__);}
@@ -89,6 +89,9 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
          lyricIndex, length, silence_min, dbfs, channels, sr, bits
     );
     // 非静默区间
+
+    struct IndexRange notSilenceRangeList2 = {0,  (int *)malloc( 2 * (1 + 1) * sizeof(int))};
+    memset(notSilenceRangeList2.data, 0 , 2 * (1 + 1) * sizeof(notSilenceRangeList2.data[0]));
 
     float reversThreshold = reverse_dBFS(dbfs, bits);
     int seek_step = 10.0 / 1000 * channels * sr;
@@ -244,7 +247,8 @@ float* get_frameIndexToTimeIndex(struct IndexRange notSilenceRange, int channels
     int rangeCount = notSilenceRange.length;
     float* toTimes = (float *)malloc(rangeCount * sizeof(float));
     for (int index =0; index < rangeCount; index++){
-        toTimes[index] = notSilenceRange.data[index] * 1000 / channels / sr;
+        toTimes[index] = notSilenceRange.data[index] * 1.0/ channels / sr * 1000;
+        LOGD("frame to index, frame:%d, ms:%.1f", notSilenceRange.data[index], toTimes[index]);
     }
     return toTimes;
 }
@@ -296,9 +300,10 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
     }
 
     int min_silence_ms[4] = {110, 90, 70, 50};
-    float dBFS_rate[5] = {1, 1.1, 1.15, 1.2, 1.25};
+    float dBFS_rate[8] = {0.9, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.25};
 
     float minScore = 999999;
+    struct IndexRange returnNotSilenceRange = {0, (int *)malloc(2 * sizeof(int))};
 
     int loopCount = 0;
     for (int silence_ms_index = 0; silence_ms_index < sizeof(min_silence_ms)/sizeof(min_silence_ms[0]); silence_ms_index ++ ){
@@ -368,7 +373,7 @@ float  get_rhythmGrade(float lyricTimes[], int lyricTimesLength, float splitTime
     }
     float minDistance = dtw(lyricTimes, lyricTimesLength, splitTimes, splitTimesLength);
     float meanDistance = minDistance / lyricTimesLength;
-    float grade =  1 - (meanDistance - 200)/1000 - 0.1 * abs(lyricTimesLength - splitTimesLength);
+    float grade =  1 - MAX(0, (meanDistance - 200)/1000) - 0.1 * abs(lyricTimesLength - splitTimesLength);
 
     LOGD("[grade]>>>>>>> min distance:%.3f, mean distance:%.3f, grade:%.5f", minDistance, meanDistance, grade);
     return grade;
@@ -504,14 +509,14 @@ void sig_func(int sig)
 }
 
 float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], int lyricLength) {
+    /*奔溃信号处理*/
+    signal(SIGFPE, sig_func);
+    signal(SIGSEGV, sig_func);
+
+    /*正式逻辑*/
     float *ret = (float *)malloc(2 * sizeof(float));
     ret[0] = 0;ret[1]=0;
-
     float *lRes = NULL;
-
-    /*奔溃信号处理*/
-//    signal(SIGFPE, sig_func);
-//    signal(SIGSEGV, sig_func);
 
     int *intPcmList;
     int intPcmLength = pcmLength / 2;
@@ -532,6 +537,7 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
         */
         intPcmList[i] = newValue;
     }
+
     lRes = innerCalculateGrade(intPcmList, intPcmLength, lyricList, lyricLength);
     LOGD("caculate return, %.3f,%.3f", lRes[0], lRes[1]);
 
@@ -544,4 +550,22 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
 //    free(lRes);
     LOGD("ready return, %.3f,%.3f", ret[0], ret[1]);
     return ret;
+}
+
+float *calculateGradeInt(int pcmList[], int pcmLength, int lyricList[], int lyricLength) {
+    return innerCalculateGrade(pcmList, pcmLength, lyricList, lyricLength);
+}
+
+float *testCharData(unsigned char pcmList[], int pcmLength, int lyricList[], int lyricLength) {
+    float* resultData = (float*)malloc(2);
+    resultData[0] = pcmList[0];
+    resultData[1] = pcmLength + lyricLength;
+    return resultData;
+}
+
+float *testStringData(unsigned char pcmList[], int pcmLength, int lyricList[], int lyricLength) {
+    float* resultData = (float*)malloc(2);
+    resultData[0] = pcmList[0];
+    resultData[1] = pcmLength + lyricLength;
+    return resultData;
 }
