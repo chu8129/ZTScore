@@ -23,9 +23,12 @@ compile_c.sh: line 9: 78662 Abort trap: 6           ./ExtractData
 
 ### 切记除法需要小数时*1.0
 
-### 日志统一: define LOGD
+### print统一
+```
+define LOGD
+```
 
-### 关于PCM
+### PCM解析
 ```
     传输是用unsight char
     储存是小端:array[2*index + 1] << 8 | array[2*index]
