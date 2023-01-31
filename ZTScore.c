@@ -9,7 +9,6 @@
 #include <signal.h>
 #include <omp.h>
 
-
 #define  LOG_TAG    "zgf"
 
 // #include <android/log.h>
