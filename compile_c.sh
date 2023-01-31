@@ -5,4 +5,5 @@ printf '\n\n\n\n\n'
 
 RED='\033[1;44;31m'
 NC='\033[0m'
-gcc -o ExtractData ExtractData.c &&  echo -e "${RED}compile done${NC}" && printf '\n\n\n' && ./ExtractData 1>log 2>&1
+# gcc -o ExtractData ZTScore.c &&  echo -e "${RED}compile done${NC}" && printf '\n\n\n' && ./ExtractData # 1>log 2>&1
+/usr/local/opt/llvm/bin/clang ZTScore.c -fopenmp -o ExtractData  &&  echo -e "${RED}compile done${NC}" && printf '\n\n\n' && ./ExtractData

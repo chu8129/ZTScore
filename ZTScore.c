@@ -7,12 +7,14 @@
 #include <regex.h>
 #include <time.h>
 #include <signal.h>
+#include <omp.h>
+
 
 #define  LOG_TAG    "zgf"
 
-#include <android/log.h>
-#define  LOGD(...)  {__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__);}
-//#define LOGD(...) {printf(LOG_TAG);printf(" ");printf(__VA_ARGS__);printf("\n");}
+// #include <android/log.h>
+// #define  LOGD(...)  {__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__);}
+#define LOGD(...) {printf(LOG_TAG);printf(" ");printf(__VA_ARGS__);printf("\n");}
 
 #define MAX_WORDS_ONE_LINE 20 // 最大的字数（其实是 19 个字，前面有两个是记录开始时间），建议改到 100
 #define CHANNELS  2 // 声道
@@ -22,6 +24,7 @@
 #define MIN(X, Y) ((X)<(Y)?(X) : (Y))
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define LIMIT(a) (MAX(0, MIN(1, a)))
+
 
 char* getsubstr(char *s, regmatch_t *pmatch)
 {
@@ -69,10 +72,10 @@ float dtw(float singerPcm[], int singerLength, float userPcm[], int userLength){
 
     float costMatrix[singerLength + 1][userLength + 1];
     for (int index =1; index<singerLength + 1; index++){
-        costMatrix[index][0] = MAX_DISTANCE;
+        costMatrix[index][0] = (float) MAX_DISTANCE;
     }
     for (int index =1; index<userLength + 1; index++){
-        costMatrix[0][index] = MAX_DISTANCE;
+        costMatrix[0][index] = (float) MAX_DISTANCE;
     }
     costMatrix[0][0] = 0;
 
@@ -363,7 +366,7 @@ float  get_rhythmGrade(float lyricTimes[], int lyricTimesLength, float splitTime
 
 float get_emotionGrade(float splitTimes[], int splitRangeCount, float dbfsArrays[], int dbfsLength){
 
-    float timeMin = 99999999;
+    float timeMin = 99999999.0;
     float timeMax = 0;
     for (int index=0;index<splitRangeCount;index++){
         float value  = fabs(splitTimes[2 * index] - splitTimes[2 * index + 1]);
@@ -475,7 +478,9 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
     free(splitRangeTimes);
     free(lyricMiddleTimes);
     free(splitMiddleTimesStruct.data);splitMiddleTimesStruct.data=NULL;
+
     free(cutAudioFrame);cutAudioFrame=NULL;
+    free(wordLineTime);wordLineTime=NULL;
 
     res[0] = rhythmGrade;
     res[1] = emotionGrade;
@@ -550,4 +555,65 @@ float *testStringData(unsigned char pcmList[], int pcmLength, int lyricList[], i
     resultData[0] = pcmList[0];
     resultData[1] = pcmLength + lyricLength;
     return resultData;
+}
+
+int randomValueTestWholeLogic(){
+    int pcmMsTimeLength = 5000 + rand() % 10000;
+
+    // generate pcm
+    int length = (int) (48000 * pcmMsTimeLength * 2 / 1000);
+
+    int* samplePcmArray = (int*) malloc(sizeof(int) * length);
+    for (int index=0; index < length; index++){
+        int sampleValue = rand() % 65536;
+        samplePcmArray[index] = sampleValue;
+    }
+
+    // generate lyric
+    int* lyricArray = (int*) malloc(sizeof(int) * 30 * 2);
+    int lyricCount = 0;
+    int timeStart = 0;
+    while (1==1){
+        int startDelta = rand() % 300;
+        int singDelta = rand() % 300;
+        int timeRangeStart = timeStart + startDelta;
+        int timeRangeEnd = timeRangeStart + singDelta;
+        // break if time reach max
+        if (timeRangeStart > pcmMsTimeLength | timeRangeEnd > pcmMsTimeLength | lyricCount > 30){
+            break;
+        }
+
+        lyricArray[2 * (lyricCount)] = timeRangeStart;
+        lyricArray[2 * (lyricCount) + 1] = timeRangeEnd;
+        lyricCount++;
+    }
+
+    lyricArray[0] = lyricCount;
+    float* res = calculateGradeInt(samplePcmArray, length, lyricArray, lyricCount);
+    return 1;
+}
+
+int randomValueTestGetRMS(){
+    int msTimeLength = rand() % (1000 * 60 * 5); // 10S=10 * 1000ms
+    int frameLength = msTimeLength * SAMPLE_RATE * CHANNELS / 1000;
+    int* pcmArray = (int*) malloc(sizeof(int) * frameLength);
+    for (int index=0; index<frameLength; index++){
+        pcmArray[index] = rand() % 65536 - 32768;
+    }
+    get_dBFS(pcmArray, frameLength, BITS);
+    free(pcmArray);
+    return 1;
+}
+
+int main(){
+    for (int index=1; index < 1000; index++){
+        int loopTimes = 1000;
+        # pragma omp parallel for
+        for (int _index=0; _index < loopTimes; _index++){
+            // randomValueTestGetRMS();
+            randomValueTestWholeLogic();
+        }
+        printf("index:%d * %d done\n", index, loopTimes);
+    }
+    return 1;
 }
