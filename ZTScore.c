@@ -530,12 +530,15 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
         ret[0] = lRes[0];
         ret[1] = lRes[1];
     }
-//    free(intPcmList); // 释放就报错。。。
-//    free(lRes);
+    // free(intPcmList);intPcmList=NULL;
+    // free(lyricList);lyricList=NULL;
+    free(lRes);
     LOGD("ready return, %.3f,%.3f", ret[0], ret[1]);
     return ret;
 }
 
+
+// ANDROID
 float *calculateGradeInt(int pcmList[], int pcmLength, int lyricList[], int lyricLength) {
     return innerCalculateGrade(pcmList, pcmLength, lyricList, lyricLength);
 }
@@ -554,6 +557,8 @@ float *testStringData(unsigned char pcmList[], int pcmLength, int lyricList[], i
     return resultData;
 }
 
+
+// TEST
 int randomValueTestWholeLogic(){
     int pcmMsTimeLength = 5000 + rand() % 10000;
 
