@@ -99,14 +99,11 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
     );
     // 非静默区间
 
-    struct IndexRange notSilenceRangeList2 = {0,  (int *)malloc( 2 * (1 + 1) * sizeof(int))};
-    memset(notSilenceRangeList2.data, 0 , 2 * (1 + 1) * sizeof(notSilenceRangeList2.data[0]));
-
     float reversThreshold = reverse_dBFS(dbfs, bits);
     int seek_step = 10.0 / 1000 * channels * sr;
     int minSilenceFrams = (int) (1.0 * silence_min / 1000 * channels * sr);
 
-    int caculateCount = (length - minSilenceFrams) / seek_step + 1;
+    int caculateCount = (length - minSilenceFrams) / seek_step;
     int *caculateStartIndex = (int *)malloc(sizeof(int) * caculateCount);
     memset(caculateStartIndex, 0, sizeof(int) * caculateCount);
 
@@ -118,6 +115,7 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
     for (int i=0;i<caculateCount;i++){silenceFlagList[i]=0;}
 
     int *partPcmList = (int *)malloc(minSilenceFrams * sizeof(int));
+    
 
     for (int index =0; index < caculateCount; index ++){
         int startIndex = caculateStartIndex[index];
@@ -146,7 +144,7 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
     }
 
     int silenceIndexList[silenceCount];
-    memset(silenceIndexList, 0 , silenceCount * sizeof(silenceIndexList[0]));
+    memset(silenceIndexList, 0 , silenceCount * sizeof(int));
 
     int updateSilenceIndex = 0;
     for (int index = 0; index < caculateCount; index ++){
@@ -592,6 +590,7 @@ int randomValueTestWholeLogic(){
 
     lyricArray[0] = lyricCount;
     float* res = calculateGradeInt(samplePcmArray, length, lyricArray, lyricCount);
+    LOGD("one times done");
     return 1;
 }
 
