@@ -25,7 +25,6 @@
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define LIMIT(a) (MAX(0, MIN(1, a)))
 
-
 char* getsubstr(char *s, regmatch_t *pmatch)
 {
     static char buf[100] = {0};
@@ -478,7 +477,6 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
     free(splitRangeTimes);
     free(lyricMiddleTimes);
     free(splitMiddleTimesStruct.data);splitMiddleTimesStruct.data=NULL;
-
     free(cutAudioFrame);cutAudioFrame=NULL;
     free(wordLineTime);wordLineTime=NULL;
 
