@@ -10,7 +10,7 @@
 ```
     ios会有异常情况，原因不明
 ```
-### mac多线程会有异常
+### mac多线程会有异常[mac单进程/ubuntu多进程正常]
 ```
 zgf lyric count:31, split count:0, min distance:2147483648.000, mean:69273664.000, rangeScore:2147793664.000, minScore:999999.000
 zgf loopCount:1  silence_ms:110, dBFS:0.950000
