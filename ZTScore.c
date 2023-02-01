@@ -39,10 +39,19 @@ struct IndexRange {
 };
 
 float get_rms(int pcmList[], int length){
-    float sum = 0;
-    for (int index = 0; index < length; index ++){
-        sum += pcmList[index];
+    double sum = 0;
+    int ma = 0;
+    int mi = 9999999;
+    for (int index=0; index<length; index++){
+        if (ma < pcmList[index]){ma = pcmList[index];}
+        if (mi > pcmList[index]){mi = pcmList[index];}
     }
+    // LOGD("get_rms status, pcmList, max:%d, min:%d, length:%d", ma, mi, length);
+    for (int index = 0; index < length; index ++){
+        // if (index % 10000 == 0){LOGD("int get_rms, sum:%f, value:%d", sum, pcmList[index]);}
+        sum += (double) pcmList[index];
+    }
+    // LOGD("in get_rms, sum done");
     float res = (float) sqrt(sum / length);
     return res;
 }
@@ -116,7 +125,7 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
 
     int *partPcmList = (int *)malloc(minSilenceFrams * sizeof(int));
     
-
+    LOGD("ready for loop done");
     for (int index =0; index < caculateCount; index ++){
         int startIndex = caculateStartIndex[index];
         memset(partPcmList, 0, minSilenceFrams * sizeof(int));
@@ -124,8 +133,10 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
         for (int pcmIndex=0; pcmIndex < minSilenceFrams; pcmIndex ++) {
             partPcmList[pcmIndex] = audio[startIndex + pcmIndex];
         }
+        LOGD("copy pcm done");
 
         float rms = get_rms(partPcmList, minSilenceFrams);
+        LOGD("get rms done");
 
         if (rms > reversThreshold){
             silenceFlagList[index] = 1;
@@ -133,7 +144,10 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
 //        LOGD("lyric:%d, startIdx:%d, minSilenceFrams:%d, maxFrame:%d, endIdx:%d, rms:%.2f, flag:%d, reversThreshold:%.2f",
 //            lyricIndex, startIndex, minSilenceFrams, length, startIndex + minSilenceFrams,
 //            rms, silenceFlagList[index], reversThreshold);
+
+        LOGD("next loop");
     }
+    LOGD("loop done");
 
     // 取静默区间
     int silenceCount = 0;
@@ -595,11 +609,11 @@ int randomValueTestWholeLogic(){
 }
 
 int randomValueTestGetRMS(){
-    int msTimeLength = rand() % (1000 * 60 * 5); // 10S=10 * 1000ms
+    int msTimeLength = rand() % (1000 * 60 * 5); // 10S = 10 * 1000ms
     int frameLength = msTimeLength * SAMPLE_RATE * CHANNELS / 1000;
     int* pcmArray = (int*) malloc(sizeof(int) * frameLength);
     for (int index=0; index<frameLength; index++){
-        pcmArray[index] = rand() % 65536 - 32768;
+        pcmArray[index] = pow(rand() % 256, 2);
     }
     get_dBFS(pcmArray, frameLength, BITS);
     free(pcmArray);
@@ -609,6 +623,8 @@ int randomValueTestGetRMS(){
 int main(){
     for (int index=1; index < 1000; index++){
         int loopTimes = 1000;
+        omp_set_dynamic(0);     // Explicitly disable dynamic teams
+        omp_set_num_threads(4); // Use 4 threads for all consecutive parallel regions
         # pragma omp parallel for
         for (int _index=0; _index < loopTimes; _index++){
             // randomValueTestGetRMS();
