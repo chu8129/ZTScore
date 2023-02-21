@@ -105,8 +105,8 @@ float dtw(float singerPcm[], int singerLength, float userPcm[], int userLength){
 }
 
 struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int length, int silence_min, float dbfs, int channels, int sr, int bits){
-    struct IndexRange defaultNotSilenceRangeList = {0,  (int *)malloc( 2 * (0 + 1) * sizeof(int))};
-    return defaultNotSilenceRangeList;
+    // struct IndexRange defaultNotSilenceRangeList = {0,  (int *)malloc( 2 * (0 + 1) * sizeof(int))};
+    // return defaultNotSilenceRangeList;
 
     LOGD("get not silence range, default value, lyricIndex:%d, audioLength:%d, silenceMin:%d, dbfs:%.2f, channels:%d, sr:%d, bits:%d",
          lyricIndex, length, silence_min, dbfs, channels, sr, bits
