@@ -479,11 +479,6 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
 
     rhythmGrade = LIMIT(rhythmGrade);
     // LOGD("节奏分:%.3f", rhythmGrade);
-    free(notSilenceRange.data);notSilenceRange.data=NULL;
-    free(lyricMiddleTimes);
-    free(splitRangeTimes);
-    free(splitMiddleTimesStruct.data);splitMiddleTimesStruct.data=NULL;
-    return res;
 
     // 情感分
     float splitDbfs[notSilenceRange.length/2];
@@ -506,12 +501,16 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
     emotionGrade = LIMIT(emotionGrade);
     // LOGD("情感分:%.3f", emotionGrade);
 
-    free(cutAudioFrame);cutAudioFrame=NULL;
-    free(wordLineTime);wordLineTime=NULL;
     free(notSilenceRange.data);notSilenceRange.data=NULL;
+    free(lyricMiddleTimes);
     free(splitRangeTimes);
     free(splitMiddleTimesStruct.data);splitMiddleTimesStruct.data=NULL;
-    free(lyricMiddleTimes);lyricMiddleTimes=NULL;
+    return res;
+
+    // free(notSilenceRange.data);notSilenceRange.data=NULL;
+    // free(splitRangeTimes);
+    // free(splitMiddleTimesStruct.data);splitMiddleTimesStruct.data=NULL;
+    // free(lyricMiddleTimes);lyricMiddleTimes=NULL;
     // return res;
 
     // free(splitRangeTimes);
@@ -602,7 +601,7 @@ float *testStringData(unsigned char pcmList[], int pcmLength, int lyricList[], i
 
 // TEST
 int randomValueTestWholeLogic(){
-    int pcmMsTimeLength = 5000 + rand() % 5000;
+    int pcmMsTimeLength = 5000 + rand() % 10000;
 
     // generate pcm
     int length = (int) (48000 * pcmMsTimeLength * 2 / 1000);
@@ -614,7 +613,8 @@ int randomValueTestWholeLogic(){
     }
 
     // generate lyric
-    int* lyricArray = (int*) malloc(sizeof(int) * 30 * 2);
+    // int* lyricArray = (int*) malloc(sizeof(int) * 30 * 2);
+    int lyricArray[60] = {0};
     int lyricCount = 0;
     int timeStart = 0;
     while (1==1){
@@ -650,6 +650,26 @@ int randomValueTestGetRMS(){
     get_dBFS(pcmArray, frameLength, BITS);
     free(pcmArray);
     return 1;
+}
+
+int* reverseInt16ToUsignedChar(int int16Array[], int length){
+    int usignedInt[length];
+    for (int index=0; index < length; index ++){
+        int value = int16Array[index];
+        if (value < 0){
+            value = value + 65536;
+        }
+        usignedInt[index] = value;
+    }
+    int* charArray = (int*) malloc(sizeof(int) * 2 * length);
+    for (int index=0; index < length; index ++){
+        int value = usignedInt[index];
+        int secondValue = value/256;
+        int firstValue = value % 256;
+        charArray[2*index] = firstValue;
+        charArray[2*index + 1] = secondValue;
+    }
+    return charArray;
 }
 
 int main(){
