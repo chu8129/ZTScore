@@ -505,7 +505,7 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
     free(lyricMiddleTimes);
     free(splitRangeTimes);
     free(splitMiddleTimesStruct.data);splitMiddleTimesStruct.data=NULL;
-    return res;
+    // return res;
 
     // free(notSilenceRange.data);notSilenceRange.data=NULL;
     // free(splitRangeTimes);
