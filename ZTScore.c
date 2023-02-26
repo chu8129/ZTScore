@@ -478,7 +478,7 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
             lyricMiddleTimes, existsTimeRangeCount - 1, splitMiddleTimes, splitMiddleTimesStruct.length);
 
     rhythmGrade = LIMIT(rhythmGrade);
-    // LOGD("节奏分:%.3f", rhythmGrade);
+    LOGD("节奏分:%.3f", rhythmGrade);
 
     // 情感分
     float splitDbfs[notSilenceRange.length/2];
@@ -499,26 +499,12 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
     }
     float emotionGrade = get_emotionGrade(splitRangeTimes, splitMiddleTimesStruct.length, splitDbfs, notSilenceRange.length/2);
     emotionGrade = LIMIT(emotionGrade);
-    // LOGD("情感分:%.3f", emotionGrade);
+    LOGD("情感分:%.3f", emotionGrade);
 
     free(notSilenceRange.data);notSilenceRange.data=NULL;
     free(lyricMiddleTimes);
     free(splitRangeTimes);
     free(splitMiddleTimesStruct.data);splitMiddleTimesStruct.data=NULL;
-    // return res;
-
-    // free(notSilenceRange.data);notSilenceRange.data=NULL;
-    // free(splitRangeTimes);
-    // free(splitMiddleTimesStruct.data);splitMiddleTimesStruct.data=NULL;
-    // free(lyricMiddleTimes);lyricMiddleTimes=NULL;
-    // return res;
-
-    // free(splitRangeTimes);
-    // free(lyricMiddleTimes);
-    // free(splitMiddleTimesStruct.data);splitMiddleTimesStruct.data=NULL;
-    // free(notSilenceRange.data);notSilenceRange.data=NULL;
-    // free(cutAudioFrame);cutAudioFrame=NULL;
-    // free(wordLineTime);wordLineTime=NULL;
 
     res[0] = rhythmGrade;
     res[1] = emotionGrade;
