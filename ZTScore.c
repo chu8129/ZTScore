@@ -98,15 +98,11 @@ float dtw(float singerPcm[], int singerLength, float userPcm[], int userLength){
 }
 
 struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int length, int silence_min, float dbfs, int channels, int sr, int bits){
-    // struct IndexRange defaultNotSilenceRangeList = {0,  (int *)malloc( 2 * (0 + 1) * sizeof(int))};
-    // return defaultNotSilenceRangeList;
-
     LOGD("get not silence range, default value, lyricIndex:%d, audioLength:%d, silenceMin:%d, dbfs:%.2f, channels:%d, sr:%d, bits:%d",
          lyricIndex, length, silence_min, dbfs, channels, sr, bits
     );
 
     // 非静默区间
-
     float reversThreshold = reverse_dBFS(dbfs, bits);
     int seek_step = 10.0 / 1000 * channels * sr;
     int minSilenceFrams = (int) (1.0 * silence_min / 1000 * channels * sr);
