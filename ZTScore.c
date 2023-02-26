@@ -118,10 +118,7 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
     int *silenceFlagList = (int *)malloc(caculateCount * sizeof(int));
     for (int i=0;i<caculateCount;i++){silenceFlagList[i]=0;}
 
-
     int partPcmArrayForRms[48000 * 2 * 1000/1000] = {0};
-    
-    LOGD("ready for loop done:%d", audio[length-1]);
 
     for (int index =0; index < caculateCount; index ++){
         int startIndex = caculateStartIndex[index];
