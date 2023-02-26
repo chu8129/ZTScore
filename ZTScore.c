@@ -124,12 +124,8 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
     LOGD("ready for loop done:%d", audio[length-1]);
 
     for (int index =0; index < caculateCount; index ++){
-        float rms = 0.;
         int startIndex = caculateStartIndex[index];
-
-        // int* partPcmArrayForRms = (int *)malloc(1000 * sizeof(int));
         int* partPcmArrayForRms = (int *)malloc(minSilenceFrams * sizeof(int));
-        // LOGD("minSilenceFrams:%d", minSilenceFrams);
         memset(partPcmArrayForRms, 0, minSilenceFrams * sizeof(int));
 
         int cutAudioLength = 0;
@@ -138,7 +134,7 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
             cutAudioLength ++;
         }
 
-        rms = get_rms(partPcmArrayForRms, cutAudioLength);
+        int rms = get_rms(partPcmArrayForRms, cutAudioLength);
         free(partPcmArrayForRms);
 
         if (rms > reversThreshold){
