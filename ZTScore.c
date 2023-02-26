@@ -44,7 +44,7 @@ float get_rms(int pcmList[], int length){
     double sum = 0;
     for (int index = 0; index < length; index ++){
         // if (index % 10000 == 0){LOGD("int get_rms, sum:%f, value:%d", sum, pcmList[index]);}
-        sum += (double) pcmList[index];
+        sum += pcmList[index];
     }
     // LOGD("in get_rms, sum done");
     float res = (float) sqrt(sum / (length + 1));
