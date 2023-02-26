@@ -117,8 +117,6 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
     int *silenceFlagList = (int *)malloc(caculateCount * sizeof(int));
     for (int i=0;i<caculateCount;i++){silenceFlagList[i]=0;}
 
-    int partPcmArrayForRms[48000 * 2 * 1000/1000] = {0};
-
     for (int index =0; index < caculateCount; index ++){
         int startIndex = caculateStartIndex[index];
         int* partPcmArrayForRms = (int *)malloc(minSilenceFrams * sizeof(int));
@@ -136,11 +134,7 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
         if (rms > reversThreshold){
             silenceFlagList[index] = 1;
         }
-//        LOGD("lyric:%d, startIdx:%d, minSilenceFrams:%d, maxFrame:%d, endIdx:%d, rms:%.2f, flag:%d, reversThreshold:%.2f",
-//            lyricIndex, startIndex, minSilenceFrams, length, startIndex + minSilenceFrams,
-//            rms, silenceFlagList[index], reversThreshold);
     }
-    LOGD(">>> get rms loop done");
 
     
     // 取静默区间
