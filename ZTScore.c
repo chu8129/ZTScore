@@ -136,7 +136,6 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
         }
     }
 
-    
     // 取静默区间
     int silenceCount = 0;
     for (int index=0; index < caculateCount; index++){
