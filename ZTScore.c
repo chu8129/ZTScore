@@ -277,6 +277,7 @@ struct IndexRange  get_splitMiddleTimes(float addZerorRangeTimes[], int rangeCou
 }
 
 struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int framesCount, float lyricMiddleTimeArray[], int lyricRangeCount, int channels, int sr, int bits){
+
     struct IndexRange returnNotSilenceRange = {0, (int *)malloc(2 * sizeof(int))};
     // normal 20230218
     // return returnNotSilenceRange; // crash /// bash compile_c.sh  549594.66s user 8942.35s system 517% cpu 29:58:58.26 total // *** Incorrect guard value: 953482739915
