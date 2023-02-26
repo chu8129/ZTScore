@@ -131,7 +131,7 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
             cutAudioLength ++;
         }
 
-        int rms = get_rms(partPcmArrayForRms, cutAudioLength);
+        float rms = get_rms(partPcmArrayForRms, cutAudioLength);
         free(partPcmArrayForRms);
 
         if (rms > reversThreshold){
