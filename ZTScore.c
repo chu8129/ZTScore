@@ -42,13 +42,6 @@ struct IndexRange {
 
 float get_rms(int pcmList[], int length){
     double sum = 0;
-    int ma = 0;
-    int mi = 9999999;
-    for (int index=0; index<length; index++){
-        if (ma < pcmList[index]){ma = pcmList[index];}
-        if (mi > pcmList[index]){mi = pcmList[index];}
-    }
-    // LOGD("get_rms status, pcmList, max:%d, min:%d, length:%d", ma, mi, length);
     for (int index = 0; index < length; index ++){
         // if (index % 10000 == 0){LOGD("int get_rms, sum:%f, value:%d", sum, pcmList[index]);}
         sum += (double) pcmList[index];
