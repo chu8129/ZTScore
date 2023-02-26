@@ -73,10 +73,10 @@ float dtw(float singerPcm[], int singerLength, float userPcm[], int userLength){
 
     float costMatrix[singerLength + 1][userLength + 1];
     for (int index =1; index<singerLength + 1; index++){
-        costMatrix[index][0] = MAX_DISTANCE;
+        costMatrix[index][0] = (float) MAX_DISTANCE;
     }
     for (int index =1; index<userLength + 1; index++){
-        costMatrix[0][index] = MAX_DISTANCE;
+        costMatrix[0][index] = (float) MAX_DISTANCE;
     }
     costMatrix[0][0] = 0;
 
