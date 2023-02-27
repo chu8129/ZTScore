@@ -430,8 +430,8 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
             BITS
     );
 
+    LOGD("============== bestest result:%d length:%d ================", 0, rangeNum);
     int rangeNum = notSilenceRange.length/2;
-    // LOGD("============== bestest result:%d length:%d ================", 0, rangeNum);
     for (int index =0; index < rangeNum; index ++){
         LOGD("best range [%.0f, %.0f], [%d:%d]",
              1.0 * notSilenceRange.data[2*index] / CHANNELS / SAMPLE_RATE * 1000,
@@ -440,7 +440,6 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
              notSilenceRange.data[2*index + 1]
         );
     }
-
     // 节奏分
     float* splitRangeTimes = get_frameIndexToTimeIndex(notSilenceRange, CHANNELS, SAMPLE_RATE);
     struct IndexRange splitMiddleTimesStruct = get_splitMiddleTimes(splitRangeTimes, notSilenceRange.length);
