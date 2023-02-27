@@ -292,7 +292,7 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
         for (int dBFS_index = 0; dBFS_index < sizeof(dBFS_rate)/sizeof(dBFS_rate[0]); dBFS_index ++) {
 
             LOGD("loopCount:%d  silence_ms:%d, dBFS:%f",
-                loopCount, min_silence_ms[silence_ms_index], dBFS_rate[dBFS_index]);
+                 loopCount, min_silence_ms[silence_ms_index], dBFS_rate[dBFS_index]);
 
             loopCount ++;
 
@@ -323,13 +323,13 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
             float rangeScore = 10000 * abs(notSilenceRange.length/2 - lyricRangeCount)  + minDistance;
 
             LOGD("lyric count:%d, split count:%d, min distance:%.3f, mean:%.3f, rangeScore:%.3f, minScore:%.3f",
-                lyricRangeCount, middleTimeArrayLength, minDistance, minDistance/lyricRangeCount, rangeScore, minScore);
+                 lyricRangeCount, middleTimeArrayLength, minDistance, minDistance/lyricRangeCount, rangeScore, minScore);
 
             if ( rangeScore < minScore){
                 returnNotSilenceRange = notSilenceRange;
                 for (int _index=0; _index < returnNotSilenceRange.length/2; _index++){
                     LOGD("better split, start:%d, end:%d",
-                        returnNotSilenceRange.data[2*_index], returnNotSilenceRange.data[2 * _index + 1]);
+                         returnNotSilenceRange.data[2*_index], returnNotSilenceRange.data[2 * _index + 1]);
                 }
                 minScore = rangeScore;
             } else {
@@ -355,6 +355,7 @@ float  get_rhythmGrade(float lyricTimes[], int lyricTimesLength, float splitTime
     float minDistance = dtw(lyricTimes, lyricTimesLength, splitTimes, splitTimesLength);
     float meanDistance = minDistance / lyricTimesLength;
     float grade =  1 - MAX(0, (meanDistance - 200)/1000) - 0.1 * abs(lyricTimesLength - splitTimesLength);
+
     LOGD("[grade]>>>>>>> min distance:%.3f, mean distance:%.3f, grade:%.5f", minDistance, meanDistance, grade);
     return grade;
 }
@@ -463,6 +464,8 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
         splitDbfs[index] = get_dBFS(partPcmArray, updateLength, BITS);
         free(partPcmArray);
     }
+
+
     float emotionGrade = get_emotionGrade(splitRangeTimes, splitMiddleTimesStruct.length, splitDbfs, notSilenceRange.length/2);
     emotionGrade = LIMIT(emotionGrade);
     LOGD("情感分:%.3f", emotionGrade);
