@@ -41,19 +41,19 @@ struct IndexRange {
 };
 
 float get_rms(int pcmList[], int length){
+    if (length < 1){return 0;}
     double sum = 0;
     for (int index = 0; index < length; index ++){
-        // if (index % 10000 == 0){LOGD("int get_rms, sum:%f, value:%d", sum, pcmList[index]);}
         sum += pcmList[index];
     }
-    float res = (float) sqrt(sum / (length + 1));
+    float res = (float) sqrt(sum / length);
     return res;
 }
 
 
 float get_dBFS(int pcmList[], int length, int bits){
     float rms = get_rms(pcmList, length);
-    return (float) 20 * log10(rms/pow(2, bits - 1) + 0.00001);
+    return (float) 20 * log10(rms/pow(2, bits - 1) + 0.000001);
 }
 
 
