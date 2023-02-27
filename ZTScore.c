@@ -427,8 +427,8 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
             BITS
     );
 
-    LOGD("============== bestest result:%d length:%d ================", 0, rangeNum);
     int rangeNum = notSilenceRange.length/2;
+    LOGD("============== bestest result:%d length:%d ================", 0, rangeNum);
     for (int index =0; index < rangeNum; index ++){
         LOGD("best range [%.0f, %.0f], [%d:%d]",
              1.0 * notSilenceRange.data[2*index] / CHANNELS / SAMPLE_RATE * 1000,
@@ -631,8 +631,8 @@ int* reverseInt16ToUsignedChar(int int16Array[], int length){
 int main(){
     for (int index=1; index < 100000; index++){
         int loopTimes = 1000;
-        omp_set_dynamic(0);     // Explicitly disable dynamic teams
-        omp_set_num_threads(6); // Use 4 threads for all consecutive parallel regions
+        // omp_set_dynamic(0);     // Explicitly disable dynamic teams
+        // omp_set_num_threads(6); // Use 4 threads for all consecutive parallel regions
         # pragma omp parallel for
         for (int _index=0; _index < loopTimes; _index++){
             // randomValueTestGetRMS();
