@@ -279,11 +279,8 @@ struct IndexRange  get_splitMiddleTimes(float addZerorRangeTimes[], int rangeCou
 struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int framesCount, float lyricMiddleTimeArray[], int lyricRangeCount, int channels, int sr, int bits){
 
     struct IndexRange returnNotSilenceRange = {0, (int *)malloc(2 * sizeof(int))};
-    // normal 20230218
-    // return returnNotSilenceRange; // crash /// bash compile_c.sh  549594.66s user 8942.35s system 517% cpu 29:58:58.26 total // *** Incorrect guard value: 953482739915
     float dBFS = get_dBFS(audioFrames, framesCount, bits);
-    // LOGD("source frams:%d, bits:%d, fs:%.3f", framesCount, bits, dBFS);
-    // return returnNotSilenceRange; //crash // bash compile_c.sh  67622.47s user 695.85s system 563% cpu 3:21:59.96 total // Incorrect guard value: 1760936591600
+    LOGD("source frams:%d, bits:%d, fs:%.3f", framesCount, bits, dBFS);
 
     int min_silence_ms[4] = {110, 90, 70, 50};
     float dBFS_rate[8] = {0.9, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.25};
@@ -294,8 +291,8 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
     for (int silence_ms_index = 0; silence_ms_index < sizeof(min_silence_ms)/sizeof(min_silence_ms[0]); silence_ms_index ++ ){
         for (int dBFS_index = 0; dBFS_index < sizeof(dBFS_rate)/sizeof(dBFS_rate[0]); dBFS_index ++) {
 
-            // LOGD("loopCount:%d  silence_ms:%d, dBFS:%f",
-            //     loopCount, min_silence_ms[silence_ms_index], dBFS_rate[dBFS_index]);
+            LOGD("loopCount:%d  silence_ms:%d, dBFS:%f",
+                loopCount, min_silence_ms[silence_ms_index], dBFS_rate[dBFS_index]);
 
             loopCount ++;
 
@@ -311,7 +308,7 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
                     bits);
 
             // 单位 ms
-            // LOGD("not silence range length:%d", notSilenceRange.length);
+            LOGD("not silence range length:%d", notSilenceRange.length);
             float* splitRangeTimes = get_frameIndexToTimeIndex(notSilenceRange, channels, sr);
             struct IndexRange middleTimeArrayStruct = get_splitMiddleTimes(splitRangeTimes, notSilenceRange.length);
             float middleTimeArray[middleTimeArrayStruct.length];
