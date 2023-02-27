@@ -322,14 +322,14 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
             float minDistance = dtw(lyricMiddleTimeArray, lyricRangeCount, middleTimeArray, middleTimeArrayLength);
             float rangeScore = 10000 * abs(notSilenceRange.length/2 - lyricRangeCount)  + minDistance;
 
-            // LOGD("lyric count:%d, split count:%d, min distance:%.3f, mean:%.3f, rangeScore:%.3f, minScore:%.3f",
-            //     lyricRangeCount, middleTimeArrayLength, minDistance, minDistance/lyricRangeCount, rangeScore, minScore);
+            LOGD("lyric count:%d, split count:%d, min distance:%.3f, mean:%.3f, rangeScore:%.3f, minScore:%.3f",
+                lyricRangeCount, middleTimeArrayLength, minDistance, minDistance/lyricRangeCount, rangeScore, minScore);
 
             if ( rangeScore < minScore){
                 returnNotSilenceRange = notSilenceRange;
                 for (int _index=0; _index < returnNotSilenceRange.length/2; _index++){
-                    // LOGD("better split, start:%d, end:%d",
-                    //     returnNotSilenceRange.data[2*_index], returnNotSilenceRange.data[2 * _index + 1]);
+                    LOGD("better split, start:%d, end:%d",
+                        returnNotSilenceRange.data[2*_index], returnNotSilenceRange.data[2 * _index + 1]);
                 }
                 minScore = rangeScore;
             } else {
@@ -347,15 +347,15 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
 
 float  get_rhythmGrade(float lyricTimes[], int lyricTimesLength, float splitTimes[], int splitTimesLength){
     for (int index = 0; index < splitTimesLength;  index ++){
-        //LOGD("split time, index:%d, %.1f", index, splitTimes[index]);
+        LOGD("split time, index:%d, %.1f", index, splitTimes[index]);
     }
     for (int index = 0; index < lyricTimesLength;  index ++){
-        //LOGD("lyric time, index:%d, %.1f", index, lyricTimes[index]);
+        LOGD("lyric time, index:%d, %.1f", index, lyricTimes[index]);
     }
     float minDistance = dtw(lyricTimes, lyricTimesLength, splitTimes, splitTimesLength);
     float meanDistance = minDistance / lyricTimesLength;
     float grade =  1 - MAX(0, (meanDistance - 200)/1000) - 0.1 * abs(lyricTimesLength - splitTimesLength);
-    // LOGD("[grade]>>>>>>> min distance:%.3f, mean distance:%.3f, grade:%.5f", minDistance, meanDistance, grade);
+    LOGD("[grade]>>>>>>> min distance:%.3f, mean distance:%.3f, grade:%.5f", minDistance, meanDistance, grade);
     return grade;
 }
 
@@ -369,7 +369,7 @@ float get_emotionGrade(float splitTimes[], int splitRangeCount, float dbfsArrays
         if (value < timeMin){timeMin = value;}
     }
     float durationsGrade = 1 - timeMin / timeMax;
-    // LOGD("声音持续, 最大:%.3f, 最小:%.3f, 得分:%.3f", timeMax, timeMin, durationsGrade);
+    LOGD("声音持续, 最大:%.3f, 最小:%.3f, 得分:%.3f", timeMax, timeMin, durationsGrade);
 
 
     float dbfsMin = 0;
@@ -389,10 +389,10 @@ float get_emotionGrade(float splitTimes[], int splitRangeCount, float dbfsArrays
     if (dbfsMin > -30){dbfsGrade=0;}
     if (fabs(dbfsMax - dbfsMin) > 12){dbfsGrade=0;}
 
-    // LOGD("音频幅度, 最大:%.3f, 最小:%.3f, 得分:%.3f", dbfsMax, dbfsMin, dbfsGrade);
+    LOGD("音频幅度, 最大:%.3f, 最小:%.3f, 得分:%.3f", dbfsMax, dbfsMin, dbfsGrade);
 
     float returnGrade = 0.7 * durationsGrade + 0.3 * dbfsGrade;
-    // LOGD("发声时长情感分:%.3f, 发声音量情感分:%.3f, 加权:%.3f", durationsGrade, dbfsGrade, returnGrade);
+    LOGD("发声时长情感分:%.3f, 发声音量情感分:%.3f, 加权:%.3f", durationsGrade, dbfsGrade, returnGrade);
     return returnGrade;
 }
 
@@ -400,16 +400,12 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
     static float res[2];
     res[0] = 0;
     res[1] = 1;
-
     if (segmentFrames < 48000 * 2 * 0.1){
         LOGD("ERROR, audio length error: < 0.1S");
         return res;
     }
-    // return res; // 20230215 run 18 h normal
     // 取得歌词每个字的 (t1, t2) 中间值
     float* lyricMiddleTimes = get_LyricMiddleTimes(wordLineTime, existsTimeRangeCount);
-
-
     // 非静音区间
     // lineIndex 打印用
     // cutAudioFrame 为 pcm
