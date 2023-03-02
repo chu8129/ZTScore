@@ -229,7 +229,7 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
 }
 
 
-float* get_LyricMiddleTimes(int lyricTimes[], int lyricTimeLength){
+float* get_LyricMiddleTimes(int * lyricTimes, int lyricTimeLength){
     float* lyricMiddleTimeArray = (float *)malloc(lyricTimeLength * sizeof(float));
     // 取时间中点 单位ms
     for (int index=0; index < lyricTimeLength -1; index++){
@@ -397,7 +397,7 @@ float get_emotionGrade(float splitTimes[], int splitRangeCount, float dbfsArrays
     return returnGrade;
 }
 
-float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineTime[], int existsTimeRangeCount) {
+float *innerCalculateGrade(int * cutAudioFrame, int segmentFrames, int * wordLineTime, int existsTimeRangeCount) {
     static float res[2];
     res[0] = 0;
     res[1] = 1;
@@ -535,7 +535,7 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
 
 
 // ANDROID
-float *calculateGradeInt(int pcmList[], int pcmLength, int lyricList[], int lyricLength) {
+float *calculateGradeInt(int * pcmList, int pcmLength, int * lyricList, int lyricLength) {
     return innerCalculateGrade(pcmList, pcmLength, lyricList, lyricLength);
 }
 
