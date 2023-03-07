@@ -7,12 +7,15 @@
 #include <regex.h>
 #include <time.h>
 #include <signal.h>
+#include <omp.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #define  LOG_TAG    "zgf"
 
-#include <android/log.h>
-#define  LOGD(...)  {__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__);}
-//#define LOGD(...) {printf(LOG_TAG);printf(" ");printf(__VA_ARGS__);printf("\n");}
+// #include <android/log.h>
+// #define  LOGD(...)  {__android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__);}
+#define LOGD(...) {printf(LOG_TAG);printf(" pid:%d openmpid:%d ", getpid(), omp_get_thread_num());printf(__VA_ARGS__);printf("\n");}
 
 #define MAX_WORDS_ONE_LINE 20 // 最大的字数（其实是 19 个字，前面有两个是记录开始时间），建议改到 100
 #define CHANNELS  2 // 声道
@@ -38,7 +41,8 @@ struct IndexRange {
 };
 
 float get_rms(int pcmList[], int length){
-    float sum = 0;
+    if (length < 1){return 0;}
+    double sum = 0;
     for (int index = 0; index < length; index ++){
         sum += pcmList[index];
     }
@@ -49,7 +53,7 @@ float get_rms(int pcmList[], int length){
 
 float get_dBFS(int pcmList[], int length, int bits){
     float rms = get_rms(pcmList, length);
-    return (float) 20 * log10(rms/pow(2, bits - 1));
+    return (float) 20 * log10(rms/pow(2, bits - 1) + 0.000001);
 }
 
 
@@ -69,10 +73,10 @@ float dtw(float singerPcm[], int singerLength, float userPcm[], int userLength){
 
     float costMatrix[singerLength + 1][userLength + 1];
     for (int index =1; index<singerLength + 1; index++){
-        costMatrix[index][0] = MAX_DISTANCE;
+        costMatrix[index][0] = (float) MAX_DISTANCE;
     }
     for (int index =1; index<userLength + 1; index++){
-        costMatrix[0][index] = MAX_DISTANCE;
+        costMatrix[0][index] = (float) MAX_DISTANCE;
     }
     costMatrix[0][0] = 0;
 
@@ -96,16 +100,13 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
     LOGD("get not silence range, default value, lyricIndex:%d, audioLength:%d, silenceMin:%d, dbfs:%.2f, channels:%d, sr:%d, bits:%d",
          lyricIndex, length, silence_min, dbfs, channels, sr, bits
     );
+
     // 非静默区间
-
-    struct IndexRange notSilenceRangeList2 = {0,  (int *)malloc( 2 * (1 + 1) * sizeof(int))};
-    memset(notSilenceRangeList2.data, 0 , 2 * (1 + 1) * sizeof(notSilenceRangeList2.data[0]));
-
     float reversThreshold = reverse_dBFS(dbfs, bits);
     int seek_step = 10.0 / 1000 * channels * sr;
     int minSilenceFrams = (int) (1.0 * silence_min / 1000 * channels * sr);
 
-    int caculateCount = (length - minSilenceFrams) / seek_step + 1;
+    int caculateCount = (length - minSilenceFrams) / seek_step;
     int *caculateStartIndex = (int *)malloc(sizeof(int) * caculateCount);
     memset(caculateStartIndex, 0, sizeof(int) * caculateCount);
 
@@ -116,24 +117,23 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
     int *silenceFlagList = (int *)malloc(caculateCount * sizeof(int));
     for (int i=0;i<caculateCount;i++){silenceFlagList[i]=0;}
 
-    int *partPcmList = (int *)malloc(minSilenceFrams * sizeof(int));
-
     for (int index =0; index < caculateCount; index ++){
         int startIndex = caculateStartIndex[index];
-        memset(partPcmList, 0, minSilenceFrams * sizeof(int));
+        int* partPcmArrayForRms = (int *)malloc(minSilenceFrams * sizeof(int));
+        memset(partPcmArrayForRms, 0, minSilenceFrams * sizeof(int));
 
-        for (int pcmIndex=0; pcmIndex < minSilenceFrams; pcmIndex ++) {
-            partPcmList[pcmIndex] = audio[startIndex + pcmIndex];
+        int cutAudioLength = 0;
+        for (int pcmIndex=0; (pcmIndex < minSilenceFrams) & ((startIndex + pcmIndex) < length); pcmIndex ++) {
+            partPcmArrayForRms[pcmIndex] = audio[startIndex + pcmIndex];
+            cutAudioLength ++;
         }
 
-        float rms = get_rms(partPcmList, minSilenceFrams);
+        float rms = get_rms(partPcmArrayForRms, cutAudioLength);
+        free(partPcmArrayForRms);
 
         if (rms > reversThreshold){
             silenceFlagList[index] = 1;
         }
-//        LOGD("lyric:%d, startIdx:%d, minSilenceFrams:%d, maxFrame:%d, endIdx:%d, rms:%.2f, flag:%d, reversThreshold:%.2f",
-//            lyricIndex, startIndex, minSilenceFrams, length, startIndex + minSilenceFrams,
-//            rms, silenceFlagList[index], reversThreshold);
     }
 
     // 取静默区间
@@ -145,7 +145,7 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
     }
 
     int silenceIndexList[silenceCount];
-    memset(silenceIndexList, 0 , silenceCount * sizeof(silenceIndexList[0]));
+    memset(silenceIndexList, 0 , silenceCount * sizeof(int));
 
     int updateSilenceIndex = 0;
     for (int index = 0; index < caculateCount; index ++){
@@ -154,6 +154,8 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
             updateSilenceIndex ++;
         }
     }
+    free(silenceFlagList);
+    free(caculateStartIndex);
 
 //    LOGD("silence range count: %d", updateSilenceIndex);
 //    for (int __index=0; __index < updateSilenceIndex/2; __index++){
@@ -223,14 +225,11 @@ struct IndexRange get_notSilenceRangeLogic(int lyricIndex, int audio[], int leng
         }
     }
     notSilenceRangeList.length = 2*notSilenceCount;
-    free(caculateStartIndex);
-    free(partPcmList);
-    free(silenceFlagList);
     return notSilenceRangeList;
 }
 
 
-float* get_LyricMiddleTimes(int lyricTimes[], int lyricTimeLength){
+float* get_LyricMiddleTimes(int * lyricTimes, int lyricTimeLength){
     float* lyricMiddleTimeArray = (float *)malloc(lyricTimeLength * sizeof(float));
     // 取时间中点 单位ms
     for (int index=0; index < lyricTimeLength -1; index++){
@@ -279,6 +278,7 @@ struct IndexRange  get_splitMiddleTimes(float addZerorRangeTimes[], int rangeCou
 
 struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int framesCount, float lyricMiddleTimeArray[], int lyricRangeCount, int channels, int sr, int bits){
 
+    struct IndexRange returnNotSilenceRange = {0, (int *)malloc(2 * sizeof(int))};
     float dBFS = get_dBFS(audioFrames, framesCount, bits);
     LOGD("source frams:%d, bits:%d, fs:%.3f", framesCount, bits, dBFS);
 
@@ -286,7 +286,6 @@ struct IndexRange get_notSilenceRange(int lyricIndex, int audioFrames[], int fra
     float dBFS_rate[8] = {0.9, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.25};
 
     float minScore = 999999;
-    struct IndexRange returnNotSilenceRange = {0, (int *)malloc(2 * sizeof(int))};
 
     int loopCount = 0;
     for (int silence_ms_index = 0; silence_ms_index < sizeof(min_silence_ms)/sizeof(min_silence_ms[0]); silence_ms_index ++ ){
@@ -363,7 +362,7 @@ float  get_rhythmGrade(float lyricTimes[], int lyricTimesLength, float splitTime
 
 float get_emotionGrade(float splitTimes[], int splitRangeCount, float dbfsArrays[], int dbfsLength){
 
-    float timeMin = 99999999;
+    float timeMin = 99999999.0;
     float timeMax = 0;
     for (int index=0;index<splitRangeCount;index++){
         float value  = fabs(splitTimes[2 * index] - splitTimes[2 * index + 1]);
@@ -398,7 +397,7 @@ float get_emotionGrade(float splitTimes[], int splitRangeCount, float dbfsArrays
     return returnGrade;
 }
 
-float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineTime[], int existsTimeRangeCount) {
+float *innerCalculateGrade(int * cutAudioFrame, int segmentFrames, int * wordLineTime, int existsTimeRangeCount) {
     static float res[2];
     res[0] = 0;
     res[1] = 1;
@@ -424,8 +423,8 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
             SAMPLE_RATE,
             BITS
     );
-    int rangeNum = notSilenceRange.length/2;
 
+    int rangeNum = notSilenceRange.length/2;
     LOGD("============== bestest result:%d length:%d ================", 0, rangeNum);
     for (int index =0; index < rangeNum; index ++){
         LOGD("best range [%.0f, %.0f], [%d:%d]",
@@ -450,20 +449,19 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
 
     // 情感分
     float splitDbfs[notSilenceRange.length/2];
-    LOGD("[segementFramse]->%d ", segmentFrames);
     for (int index=0;index<notSilenceRange.length/2;index++){
         int startFrameIndex = notSilenceRange.data[2*index];
         int endFrameIndex = notSilenceRange.data[2*index + 1];
         int copyLength = endFrameIndex - startFrameIndex + 1;
         int *partPcmArray = (int *)malloc(copyLength * sizeof(int));
-
-        for (int copyFrameIndex=0; copyFrameIndex < copyLength; copyFrameIndex++){
+        // int partPcmArray[1000]= {0};
+        int updateLength = 0;
+        for (int copyFrameIndex=0; (copyFrameIndex < copyLength) & (segmentFrames > startFrameIndex + copyFrameIndex); copyFrameIndex++){
             int value = cutAudioFrame[startFrameIndex + copyFrameIndex];
             partPcmArray[copyFrameIndex] = value;
+            updateLength ++;
         }
-        splitDbfs[index] = get_dBFS(partPcmArray, copyLength, BITS);
-        LOGD("emotion:range:rms: %.3f", splitDbfs[index]);
-
+        splitDbfs[index] = get_dBFS(partPcmArray, updateLength, BITS);
         free(partPcmArray);
     }
 
@@ -472,15 +470,15 @@ float *innerCalculateGrade(int cutAudioFrame[], int segmentFrames, int wordLineT
     emotionGrade = LIMIT(emotionGrade);
     LOGD("情感分:%.3f", emotionGrade);
 
-    free(splitRangeTimes);
+    free(notSilenceRange.data);notSilenceRange.data=NULL;
     free(lyricMiddleTimes);
+    free(splitRangeTimes);
     free(splitMiddleTimesStruct.data);splitMiddleTimesStruct.data=NULL;
-    free(cutAudioFrame);cutAudioFrame=NULL;
 
     res[0] = rhythmGrade;
     res[1] = emotionGrade;
 
-    LOGD("\nALL DONE ~~~\n\n")
+    LOGD("ALL DONE ~~~")
 
     return res;
 }
@@ -528,13 +526,16 @@ float *calculateGrade(unsigned char pcmList[], int pcmLength, int lyricList[], i
         ret[0] = lRes[0];
         ret[1] = lRes[1];
     }
-//    free(intPcmList); // 释放就报错。。。
-//    free(lRes);
+    // free(intPcmList);intPcmList=NULL;
+    // free(lyricList);lyricList=NULL;
+    free(lRes);
     LOGD("ready return, %.3f,%.3f", ret[0], ret[1]);
     return ret;
 }
 
-float *calculateGradeInt(int pcmList[], int pcmLength, int lyricList[], int lyricLength) {
+
+// ANDROID
+float *calculateGradeInt(int * pcmList, int pcmLength, int * lyricList, int lyricLength) {
     return innerCalculateGrade(pcmList, pcmLength, lyricList, lyricLength);
 }
 
@@ -550,4 +551,94 @@ float *testStringData(unsigned char pcmList[], int pcmLength, int lyricList[], i
     resultData[0] = pcmList[0];
     resultData[1] = pcmLength + lyricLength;
     return resultData;
+}
+
+
+// TEST
+int randomValueTestWholeLogic(){
+    int pcmMsTimeLength = 5000 + rand() % 10000;
+
+    // generate pcm
+    int length = (int) (48000 * pcmMsTimeLength * 2 / 1000);
+
+    int* samplePcmArray = (int*) malloc(sizeof(int) * length);
+    for (int index=0; index < length; index++){
+        int sampleValue = rand() % 65536;
+        samplePcmArray[index] = sampleValue;
+    }
+
+    // generate lyric
+    // int* lyricArray = (int*) malloc(sizeof(int) * 30 * 2);
+    int lyricArray[60] = {0};
+    int lyricCount = 0;
+    int timeStart = 0;
+    while (1==1){
+        int startDelta = rand() % 300;
+        int singDelta = rand() % 300;
+        int timeRangeStart = timeStart + startDelta;
+        int timeRangeEnd = timeRangeStart + singDelta;
+        // break if time reach max
+        if (timeRangeStart > pcmMsTimeLength | timeRangeEnd > pcmMsTimeLength | lyricCount > 30){
+            break;
+        }
+
+        lyricArray[2 * (lyricCount)] = timeRangeStart;
+        lyricArray[2 * (lyricCount) + 1] = timeRangeEnd;
+        lyricCount++;
+    }
+
+    lyricArray[0] = lyricCount;
+    float* res = calculateGradeInt(samplePcmArray, length, lyricArray, lyricCount);
+    LOGD("one times done");
+    free(samplePcmArray);
+    // free(lyricArray);
+    return 1;
+}
+
+int randomValueTestGetRMS(){
+    int msTimeLength = rand() % (1000 * 60 * 5); // 10S = 10 * 1000ms
+    int frameLength = msTimeLength * SAMPLE_RATE * CHANNELS / 1000;
+    int* pcmArray = (int*) malloc(sizeof(int) * frameLength);
+    for (int index=0; index<frameLength; index++){
+        pcmArray[index] = pow(rand() % 256, 2);
+    }
+    get_dBFS(pcmArray, frameLength, BITS);
+    free(pcmArray);
+    return 1;
+}
+
+int* reverseInt16ToUsignedChar(int int16Array[], int length){
+    int usignedInt[length];
+    for (int index=0; index < length; index ++){
+        int value = int16Array[index];
+        if (value < 0){
+            value = value + 65536;
+        }
+        usignedInt[index] = value;
+    }
+    int* charArray = (int*) malloc(sizeof(int) * 2 * length);
+    for (int index=0; index < length; index ++){
+        int value = usignedInt[index];
+        int secondValue = value/256;
+        int firstValue = value % 256;
+        charArray[2*index] = firstValue;
+        charArray[2*index + 1] = secondValue;
+    }
+    return charArray;
+}
+
+int main(){
+    for (int index=1; index < 100000; index++){
+        int loopTimes = 1000;
+        // omp_set_dynamic(0);     // Explicitly disable dynamic teams
+        // omp_set_num_threads(6); // Use 4 threads for all consecutive parallel regions
+        # pragma omp parallel for
+        for (int _index=0; _index < loopTimes; _index++){
+            // randomValueTestGetRMS();
+            randomValueTestWholeLogic();
+        }
+        printf("index:%d * %d done\n", index, loopTimes);
+    }
+    printf("all loop done \n");
+    return 1;
 }
