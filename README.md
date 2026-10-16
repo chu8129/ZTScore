@@ -612,7 +612,7 @@ calculateGrade()                              ← 对外入口
 
 ---
 
-## 10. 移植到 Python 的建议
+## 10. 原生 Python 的建议/测试时
 
 ### 推荐库
 
